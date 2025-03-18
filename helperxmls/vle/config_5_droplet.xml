@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<mardyn version="20100525" >
+	<loglevel>ERROR</loglevel>
+	<refunits type="SI" >
+		<length unit="nm">0.1</length>
+		<mass unit="u">1</mass>
+		<energy unit="K">1</energy>
+	</refunits>
+
+	<simulation type="MD" >
+		<integrator type="Leapfrog" >
+			<timestep unit="reduced" >0.00182367</timestep>
+		</integrator>
+
+		<run>
+			<currenttime>0.0</currenttime> 
+			<production>
+				<steps>10000</steps>
+			</production>
+		</run>
+
+		<ensemble type="NVT">
+			<!-- Nparticles determined by the input file -->
+			<temperature unit="reduced">0.80</temperature>
+			<domain type="box">
+				<lx>120</lx>
+				<ly>120</ly>
+				<lz>120</lz>
+			</domain>
+
+			<components>
+				<include query="/components/moleculetype" >../components.xml</include>
+				<include query="/mixing">../mixing_2c.xml</include>
+			</components>
+
+			<phasespacepoint>
+				<generator name="MultiObjectGenerator">
+					
+					<!-- vapor 1 -->
+					<objectgenerator>
+						<filler type="ReplicaFiller">
+							<input type="BinaryReader">
+								<header>../vap/cp_binary_repVap-1.restart.header.xml</header>
+								<data>../vap/cp_binary_repVap-1.restart.dat</data>
+							</input>
+						</filler>
+						
+						<object type="ObjectSubtractor">
+							<object1 type="Cuboid">
+								<lower> <x>0</x> <y>0</y> <z>0</z> </lower>
+								<upper> <x>120</x> <y>120</y> <z>120</z> </upper> <!-- y=3000 - sigma*0.5-->
+							</object1>
+							<object2 type="Sphere">
+							 <center> <x>60</x> <y>60</y> <z>60</z> </center> <!-- y=2000 - sigma*0.5-->
+							 <radius>51</radius> <!-- y=1000 + sigma -->
+							</object2>
+						</object>
+					</objectgenerator>
+					
+					<!-- droplet 1 -->
+					<objectgenerator>
+						<filler type="ReplicaFiller">
+							<input type="BinaryReader">
+								<header>../liq/cp_binary_repLiq-1.restart.header.xml</header>
+								<data>../liq/cp_binary_repLiq-1.restart.dat</data>
+							</input>
+						</filler>
+						
+						<object type="Sphere">
+						 <center> <x>60</x> <y>60</y> <z>60</z> </center> <!-- y=2000 - sigma*0.5-->
+						 <radius>50</radius>
+						</object>
+					</objectgenerator>
+					
+				</generator>
+				<ignoreCheckpointTime>true</ignoreCheckpointTime>
+			</phasespacepoint>
+		</ensemble>
+
+		<algorithm>
+
+			<parallelisation type="StaticIrregDomainDecomposition"></parallelisation>
+			<!--			<datastructure type="LinkedCells">
+                                <cellsInCutoffRadius>1</cellsInCutoffRadius>
+			</datastructure>-->
+<datastructure type="AutoPas">
+	<allowedContainers>linkedCells</allowedContainers>
+       <allowedTraversals>sli</allowedTraversals>
+       <dataLayout>SoA</dataLayout>
+       <newton3>enabled</newton3>
+    </datastructure>
+
+
+			<cutoffs type="CenterOfMass" >
+		<defaultCutoff unit="reduced" >2.5</defaultCutoff>
+				<radiusLJ unit="reduced" >2.5</radiusLJ>
+			</cutoffs>
+			<electrostatic type="ReactionField" >
+				<epsilon>1.0e+10</epsilon>
+			</electrostatic>
+		</algorithm>
+
+		<output>
+		<outputplugin name="RDF">
+	  	<!-- functionality affected by <equilibration> <steps> X </steps> </equilibration> -->
+        <writefrequency>10000</writefrequency>
+	    <samplingfrequency>5</samplingfrequency>
+        <outputprefix>rdf_per</outputprefix>
+        <bins>1000</bins>
+        <intervallength>0.003</intervallength>
+      </outputplugin>
+
+
+		</output>
+	
+	</simulation>
+
+</mardyn>

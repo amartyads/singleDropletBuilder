@@ -1,0 +1,36 @@
+{
+    "component": {
+        "mass" : 1.0,
+        "sigma" : 1.0,
+        "epsilon" : 1.0
+    },
+    "scenario" : {
+        "boxSize" : 200,
+        "dropDia" : 100,
+        "temperature" : 1.0,
+        "buildCP" : false,
+        "timestepsGen" : 5000,
+        "timestepsRep" : 500,
+        "timestepsDropBuild" : 100,
+        "timestepsProd" : 10000
+    },
+    "stack" : {
+        "autopasBuilder" : false,
+        "autopasFinal" : false,
+        "mamico" : false
+    },
+    "job" : {
+        "manager" : "slurm"
+    },
+    "paths" : {
+        "ls1LCExec" : "",
+        "ls1APExec" : "",
+        "mamicoExec" : "",
+        "output" : "./newConfig"
+    },
+    "adiosOutput" : {
+        "enabled" : false,
+        "filename" : "singleDrop.bp",
+        "frequency" : 1000
+    }
+}

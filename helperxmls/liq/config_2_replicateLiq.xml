@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<mardyn version="20100525" >
+	<loglevel>INFO</loglevel>
+	<refunits type="SI" >
+		<length unit="nm">0.1</length>
+		<mass unit="u">1</mass>
+		<energy unit="K">1</energy>
+	</refunits>
+
+	<simulation type="MD" >
+		<integrator type="Leapfrog" >
+			<timestep unit="reduced" >0.00182367</timestep>
+		</integrator>
+
+		<run>
+			<currenttime>0.0</currenttime> 
+			<production>
+				<steps>5000</steps>
+			</production>
+		</run>
+
+		<ensemble type="NVT">
+			<!-- Nparticles determined by the input file -->
+			<temperature unit="reduced" >0.80</temperature>
+			<domain type="box">
+				<lx>110</lx>
+				<ly>110</ly>
+				<lz>110</lz>
+			</domain>
+
+			<components>
+				<include query="/components/moleculetype" >../components.xml</include>
+				<include query="/mixing">../mixing_2c.xml</include>
+			</components>
+
+			<phasespacepoint>
+				<generator name="MultiObjectGenerator">
+					<objectgenerator>
+						<filler type="ReplicaFiller">
+							<input type="BinaryReader">
+								<header>cp_binary_genLiq-1.restart.header.xml</header>
+								<data>cp_binary_genLiq-1.restart.dat</data>
+							</input>
+						</filler>
+						
+						<object type="Cuboid">
+							<lower> <x>0</x> <y>0</y> <z>0</z> </lower>
+							<upper> <x>110</x> <y>110</y> <z>110</z> </upper>
+						</object>
+					</objectgenerator>
+				</generator>
+				<ignoreCheckpointTime>true</ignoreCheckpointTime>
+			</phasespacepoint>
+			
+		</ensemble>
+
+<!--
+		<NEMD>
+				<include query="/NEMD/feature">NEMD.xml</include>
+		</NEMD>
+-->
+
+		<algorithm>
+
+			<parallelisation type="DomainDecomposition"></parallelisation>
+<!--
+			<parallelisation type="KDDecomposition">
+				<CommunicationScheme>direct</CommunicationScheme>
+				<updateFrequency>100000</updateFrequency>
+				<fullSearchThreshold>3</fullSearchThreshold>
+				<splitBiggestDimension>false</splitBiggestDimension>
+				<useVectorizationTuner>false</useVectorizationTuner>
+				<generateNewFiles>false</generateNewFiles>
+				<useExistingFiles>false</useExistingFiles>
+			</parallelisation>
+-->
+<!--			<datastructure type="LinkedCells">
+				<cellsInCutoffRadius>1</cellsInCutoffRadius>
+			</datastructure>-->
+<datastructure type="AutoPas">
+        <allowedContainers>linkedCells</allowedContainers>
+                        </datastructure>
+
+			<cutoffs type="CenterOfMass" >
+			<defaultCutoff unit="reduced" >2.5</defaultCutoff>
+				<radiusLJ unit="reduced" >2.5</radiusLJ>
+			</cutoffs>
+			<electrostatic type="ReactionField" >
+				<epsilon>1.0e+10</epsilon>
+			</electrostatic>
+		</algorithm>
+
+		<output>
+			<outputplugin name="CheckpointWriter">
+				<type>binary</type>
+				<writefrequency>5000</writefrequency>
+				<outputprefix>cp_binary_repLiq</outputprefix>
+			</outputplugin>
+
+<!--
+			<outputplugin name="ResultWriter">
+				<writefrequency>10000</writefrequency>
+			<outputprefix>result</outputprefix>
+			</outputplugin>
+-->
+<!--
+			<outputplugin name="MmpldWriter" type="simple">
+				<include query="/spheres" >../../sphereparams.xml</include>
+				<writecontrol>
+					<start>0</start>
+					<writefrequency>100</writefrequency>
+					<stop>500</stop>
+					<framesperfile>0</framesperfile>
+				</writecontrol>
+				<outputprefix>megamol</outputprefix>  
+			</outputplugin>
+-->
+<!--
+			<outputplugin name="SysMonOutput">
+				<expression label="LoadAvg1">procloadavg:loadavg1</expression>
+				<expression label="Free+BufferRAM [MB]">sysinfo:freeram sysinfo:bufferram + sysinfo:mem_unit * float 1048576 /</expression>
+				<writefrequency>100000</writefrequency>
+			</outputplugin>
+-->
+		</output>
+
+		<plugin name="MaxCheck">
+			<control>
+				<start>0</start>
+				<frequency>1</frequency>
+				<stop>500</stop>
+			</control>
+			<targets>
+				<target cid="1" method="2">
+					<Fmax>10000</Fmax>
+					<vmax>2.</vmax>
+<!--			<vmax>2.874156111274848</vmax> -->
+				</target>
+				<target cid="2" method="2">
+					<Fmax>10000</Fmax>
+					<vmax>2.</vmax>
+<!--			<vmax>2.874156111274848</vmax> -->
+				</target>
+			</targets>
+		</plugin>
+	
+	</simulation>
+
+</mardyn>
