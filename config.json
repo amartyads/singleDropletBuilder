@@ -14,6 +14,10 @@
         "timestepsDropBuild" : 100,
         "timestepsProd" : 10000
     },
+    "lb" : {
+        "enabled" : true,
+        "ratios" : [[5,5,5,5],[5,5,5,5],[5,5,5,5]]
+    },
     "stack" : {
         "autopasBuilder" : false,
         "autopasFinal" : false,
@@ -26,7 +30,7 @@
         "ls1LCExec" : "",
         "ls1APExec" : "",
         "mamicoExec" : "",
-        "output" : "./newConfig"
+        "output" : "./trial"
     },
     "adiosOutput" : {
         "enabled" : false,

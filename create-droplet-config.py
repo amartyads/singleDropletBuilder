@@ -36,6 +36,22 @@ lcText = """
 autoPXML = ET.fromstring(autopasText)
 lcXML = ET.fromstring(lcText)
 
+def convertJsonLBtoXML(lb):
+    textXML = "<subdomainWeights>\n<x>"
+    for item in lb[0]:
+        textXML += str(item) + ','
+    textXML = textXML[:-1]
+    textXML += "</x>\n<y>"
+    for item in lb[1]:
+        textXML += str(item) + ','
+    textXML = textXML[:-1]
+    textXML += "</y>\n<z>"
+    for item in lb[2]:
+        textXML += str(item) + ','
+    textXML = textXML[:-1]
+    textXML += "</z>\n</subdomainWeights>"
+    return ET.fromstring(textXML)
+
 def doCommonXMLChanges(tree, ts, builder):
     tree.find('simulation/ensemble/temperature').text = str(jsonData['scenario']['temperature'])
     tree.find('simulation/algorithm/cutoffs/defaultCutoff').text = str(jsonData['component']['sigma'] * 2.5)
@@ -124,7 +140,8 @@ def main(argv):
         os.makedirs(os.path.join(jsonData['paths']['output'],'liq'))
         os.makedirs(os.path.join(jsonData['paths']['output'],'vap'))
         os.makedirs(os.path.join(jsonData['paths']['output'],'vle'))
-        os.makedirs(os.path.join(jsonData['paths']['output'],'coupled'))
+        if jsonData['stack']['mamico']:
+            os.makedirs(os.path.join(jsonData['paths']['output'],'coupled'))
     
     # extra xmls
     adiosText = f"""
@@ -230,6 +247,11 @@ def main(argv):
             tree.find('loglevel').text = "ERROR"
         else:
             tree.find('loglevel').text = "INFO"
+
+    if jsonData['lb']['enabled']:
+        tree.find('simulation/algorithm/parallelisation').attrib['type'] = "StaticIrregDomainDecomposition"
+        tree.find('simulation/algorithm/parallelisation').append(convertJsonLBtoXML(jsonData['lb']['ratios']))
+
     tree.find('simulation/ensemble/domain/lx').text = str(jsonData['scenario']['boxSize'])
     tree.find('simulation/ensemble/domain/ly').text = str(jsonData['scenario']['boxSize'])
     tree.find('simulation/ensemble/domain/lz').text = str(jsonData['scenario']['boxSize'])
@@ -274,6 +296,9 @@ def main(argv):
             tree.find('loglevel').text = "ERROR"
         else:
             tree.find('loglevel').text = "INFO"
+        if jsonData['lb']['enabled']:
+            tree.find('simulation/algorithm/parallelisation').attrib['type'] = "StaticIrregDomainDecomposition"
+            tree.find('simulation/algorithm/parallelisation').append(convertJsonLBtoXML(jsonData['lb']['ratios']))
         ET.indent(tree, '  ')
         treeF.write(os.path.join(jsonData['paths']['output'],'vle','config_6_dropletLoad.xml'), encoding='UTF-8', xml_declaration=True)
 
