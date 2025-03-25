@@ -12,7 +12,6 @@ import xml.etree.cElementTree as ET
 # edit vle100 (ls1/autop)
 # edit vle (ls1/autop) (mamico y/n)
 # add mamico
-# add all jobscripts
 
 #skeletons
 
@@ -62,12 +61,12 @@ def doCommonXMLChanges(tree, ts, builder):
             plugin.find('writefrequency').text = str(ts)
     tree.find('simulation/algorithm').remove(tree.find('simulation/algorithm/datastructure'))
     if builder:
-        if(jsonData['stack']['autopasBuilder']):
+        if(jsonData['stack']['autopasPrep']):
             tree.find('simulation/algorithm').append(autoPXML)
         else:
             tree.find('simulation/algorithm').append(lcXML)
     else:
-        if(jsonData['stack']['autopasFinal']):
+        if(jsonData['stack']['autopasProd']):
             tree.find('simulation/algorithm').append(autoPXML)
         else:
             tree.find('simulation/algorithm').append(lcXML)
@@ -313,13 +312,15 @@ def main(argv):
         # edit mamico
         treeF = ET.parse('./helperxmls/couette.xml')
         tree = treeF.getroot()
+        tree.find("couette-test/domain").attrib["channelheight"] = str(jsonData['scenario']['boxSize'] + 40)
+        tree.find("couette-test/coupling").attrib["coupling-cycles"] = str(jsonData['scenario']['mamicoCyc'])
 
-        tree.find("couette-test/microscopic-solver").attrib["density"] = str(rhov)
         tree.find("couette-test/microscopic-solver").attrib["temperature"] = str(jsonData['scenario']['temperature'])
+        tree.find("couette-test/microscopic-solver").attrib["number-md-simulations"] = str(jsonData['scenario']['mamicoNumMultiMD'])
+        tree.find("couette-test/microscopic-solver").attrib["density"] = str(rhov)
         tree.find("mamico/boundary-force").attrib["density"] = str(rhov)
         tree.find("mamico/boundary-force").attrib["temperature"] = str(jsonData['scenario']['temperature'])
         tree.find("molecular-dynamics/molecule-configuration").attrib["temperature"] = str(jsonData['scenario']['temperature'])
-        
 
 if __name__ == '__main__':
     main(sys.argv[1:])

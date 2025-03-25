@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --time=06:00:00   # walltime limit (HH:MM:SS)
-#SBATCH --nodes=4   # number of nodes
+#SBATCH --time=01:00:00   # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
 #SBATCH --ntasks-per-node=72
 #SBATCH --cpus-per-task=1   # processor core(s) per node
 ##SBATCH --partition=small    # partition
@@ -14,10 +14,10 @@ ml mpi
 
 export OMP_NUM_THREADS=1
 
-cd /beegfs/home/d/dasshara/staticLB/01_pureMD/md120r50/liq
+cd {workDir}/liq
 
-srun ~/repos/ls1-mardyn/build/src/MarDyn config_1_generateLiq.xml
-srun ~/repos/ls1-mardyn/build/src/MarDyn config_2_replicateLiq.xml
+srun {ls1Exec} config_1_generateLiq.xml
+srun {ls1Exec} config_2_replicateLiq.xml
 rm AutoPas*
 
 echo "Job ${SLURM_JOB_ID} named ${SLURM_JOB_NAME} running from ${SLURM_SUBMIT_DIR} done" >> ~/completed_jobs.txt

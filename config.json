@@ -12,19 +12,27 @@
         "timestepsGen" : 5000,
         "timestepsRep" : 500,
         "timestepsDropBuild" : 100,
-        "timestepsProd" : 10000
+        "timestepsProd" : 10000,
+        "mamicoCyc" : 20,
+        "mamicoNumMultiMD": 2,
+        "mamicoCellsize" : 5,
+        "mamicoMDper" : 100
     },
     "lb" : {
         "enabled" : true,
         "ratios" : [[5,5,5,5],[5,5,5,5],[5,5,5,5]]
     },
     "stack" : {
-        "autopasBuilder" : false,
-        "autopasFinal" : false,
+        "autopasPrep" : false,
+        "autopasProd" : false,
         "mamico" : false
     },
     "job" : {
-        "manager" : "slurm"
+        "manager" : "pbs",
+        "system" : "hawk",
+        "runPrep" : false,
+        "runProd" : false,
+        "runMamico" : false
     },
     "paths" : {
         "ls1LCExec" : "",
