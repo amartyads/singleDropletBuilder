@@ -41,11 +41,12 @@ pbsHeader = """
 slurmDependency = """
 #SBATCH --dependency=afterok:
 """
+slurmDependencySep = ","
 
 pbsDependency = """
 #PBS -W depend=afterok:
-
 """
+pbsDependencySep = ":"
 
 hsuperModules = """
 ml gcc
@@ -119,9 +120,11 @@ def main(argv):
     if jsonData["job"]["manager"] == 'slurm':
         header = slurmHeader
         dependency = slurmDependency
+        dependencySep = slurmDependencySep
     elif jsonData["job"]["manager"] == 'pbs':
         header = pbsHeader
         dependency = pbsDependency
+        dependencySep = pbsDependencySep
     else:
         print("job manager not supported")
         sys.exit(2)
@@ -184,7 +187,7 @@ def main(argv):
     with open(vlePath + "/job.sh", 'w') as job:
         job.write(header)
         if liqJobID != '' and vapJobID != '':
-            job.write(dependency+liqJobID+','+vapJobID+'\n')
+            job.write(dependency+liqJobID+dependencySep+vapJobID+'\n')
         job.write(modules)
         job.write(commonPrerun.replace('<workDir>',vlePath))
         if jsonData["scenario"]["buildCP"]:
