@@ -161,9 +161,9 @@ def main(argv):
         for config in liqConfigs:
             job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",config))
         job.write(commonPostrun)
-        if jsonData["job"]["runPrep"]:
-            print("Submitting: " + liqPath + "/job.sh")
-            liqJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+    if jsonData["job"]["runPrep"]:
+        print("Submitting: " + liqPath + "/job.sh")
+        liqJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
 
     #vap
     os.chdir(vapPath)
@@ -174,9 +174,9 @@ def main(argv):
         for config in vapConfigs:
             job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",config))
         job.write(commonPostrun)
-        if jsonData["job"]["runPrep"]:
-            print("Submitting: " + vapPath + "/job.sh")
-            vapJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+    if jsonData["job"]["runPrep"]:
+        print("Submitting: " + vapPath + "/job.sh")
+        vapJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
 
     #vle
     #with buildcp=on and prod=off, config 5 is added to script, 6 isnt
@@ -194,9 +194,9 @@ def main(argv):
         else:
             job.write(runComm.replace("<execPath>",prodExec).replace("<configFile>",vleConfigs[0]))
         job.write(commonPostrun)
-        if (jsonData["scenario"]["buildCP"] and jsonData["job"]["runPrep"]) or jsonData["job"]["runProd"]:
-            print("Submitting: " + vlePath + "/job.sh")
-            subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8')
+    if (jsonData["scenario"]["buildCP"] and jsonData["job"]["runPrep"]) or jsonData["job"]["runProd"]:
+        print("Submitting: " + vlePath + "/job.sh")
+        subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8')
 
 
 if __name__ == '__main__':
