@@ -39,13 +39,11 @@ pbsHeader = """
 """
 
 slurmDependency = """
-#SBATCH --dependency=afterok:
-"""
+#SBATCH --dependency=afterok:"""
 slurmDependencySep = ","
 
 pbsDependency = """
-#PBS -W depend=afterok:
-"""
+#PBS -W depend=afterok:"""
 pbsDependencySep = ":"
 
 hsuperModules = """
