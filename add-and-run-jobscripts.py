@@ -7,10 +7,21 @@ export OMP_NUM_THREADS=1
 
 cd "<workDir>"
 
+set +e
+
 """
 
 commonPostrun = """
-rm AutoPas*
+rm -f AutoPas*
+
+"""
+
+commonErrCatch = """
+var=$?
+if [ "$var" -ne 0 ];then
+    rm -f AutoPas*
+    exit $var
+fi
 
 """
 
@@ -47,12 +58,16 @@ pbsDependency = """
 pbsDependencySep = ":"
 
 hsuperModules = """
+set -e
+
 ml gcc
 ml mpi
 
 """
 
 hawkModules = """
+set -e
+
 ml gcc
 ml openmpi/5.0.5
 
@@ -159,8 +174,9 @@ def main(argv):
         job.write(header)
         job.write(modules)
         job.write(commonPrerun.replace('<workDir>',liqPath))
-        for config in liqConfigs:
-            job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",config))
+        job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",liqConfigs[0]))
+        job.write(commonErrCatch)
+        job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",liqConfigs[1]))
         job.write(commonPostrun)
     if jsonData["job"]["runPrep"]:
         print("Submitting: " + liqPath + "/job.sh")
@@ -172,8 +188,9 @@ def main(argv):
         job.write(header)
         job.write(modules)
         job.write(commonPrerun.replace('<workDir>',vapPath))
-        for config in vapConfigs:
-            job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",config))
+        job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",vapConfigs[0]))
+        job.write(commonErrCatch)
+        job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",vapConfigs[1]))
         job.write(commonPostrun)
     if jsonData["job"]["runPrep"]:
         print("Submitting: " + vapPath + "/job.sh")
@@ -190,6 +207,7 @@ def main(argv):
         job.write(commonPrerun.replace('<workDir>',vlePath))
         if jsonData["scenario"]["buildCP"]:
             job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",vleConfigs[0]))
+            job.write(commonErrCatch)
             if jsonData["job"]["runProd"]:
                 job.write(runComm.replace("<execPath>",prodExec).replace("<configFile>",vleConfigs[1]))
         else:
