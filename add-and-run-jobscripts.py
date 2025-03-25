@@ -162,6 +162,7 @@ def main(argv):
             job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",config))
         job.write(commonPostrun)
         if jsonData["job"]["runPrep"]:
+            print("Submitting: " + liqPath + "/job.sh")
             liqJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
 
     #vap
@@ -174,6 +175,7 @@ def main(argv):
             job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",config))
         job.write(commonPostrun)
         if jsonData["job"]["runPrep"]:
+            print("Submitting: " + vapPath + "/job.sh")
             vapJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
 
     #vle
@@ -193,6 +195,7 @@ def main(argv):
             job.write(runComm.replace("<execPath>",prodExec).replace("<configFile>",vleConfigs[0]))
         job.write(commonPostrun)
         if (jsonData["scenario"]["buildCP"] and jsonData["job"]["runPrep"]) or jsonData["job"]["runProd"]:
+            print("Submitting: " + vlePath + "/job.sh")
             subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8')
 
 
