@@ -216,7 +216,7 @@ def main(argv):
         job.write(commonPostrun)
     if (jsonData["scenario"]["buildCP"] and jsonData["job"]["runPrep"]) or jsonData["job"]["runProd"]:
         print("Submitting: " + vlePath + "/job.sh")
-        subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8')
+        vleJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8')
 
     #mamico
     os.chdir(coupledPath)
@@ -230,7 +230,7 @@ def main(argv):
         job.write(commonPostrun)
     if jsonData["job"]["runMamico"]:
         print("Submitting: " + coupledPath + "/job.sh")
-        vapJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+        subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
 
 if __name__ == '__main__':
     main(sys.argv[1:])
