@@ -156,7 +156,7 @@
   <!--<boundary-force type="zhou-boundary-force" west="yes" east="yes" north="yes" south="yes" bottom="yes" top="yes" density="0.81" temperature="1.1" />-->
   <parallel-topology type="zyx" />
   <!--<parallel-topology type="xyz" />-->
-  <thermostat type='outerLayers' number-layers='2' />
+  <thermostat type='all' />
 </mamico>
 
 <molecular-dynamics>

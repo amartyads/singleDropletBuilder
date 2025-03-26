@@ -35,7 +35,7 @@ lcText = """
 autoPXML = ET.fromstring(autopasText)
 lcXML = ET.fromstring(lcText)
 
-def convertJsonLBtoXML(lb):
+def convertJsonLBtols1XML(lb):
     textXML = "<subdomainWeights>\n<x>"
     for item in lb[0]:
         textXML += str(item) + ','
@@ -50,6 +50,13 @@ def convertJsonLBtoXML(lb):
     textXML = textXML[:-1]
     textXML += "</z>\n</subdomainWeights>"
     return ET.fromstring(textXML)
+
+def convertLBRowtoMamicoRow(lb):
+    ret = str(lb[0])
+    for i in range(len(lb)-1):
+        ret += ' ; ' + str(lb[i+1])
+    return ret
+
 
 def doCommonXMLChanges(tree, ts, builder):
     tree.find('simulation/ensemble/temperature').text = str(jsonData['scenario']['temperature'])
@@ -249,7 +256,7 @@ def main(argv):
 
     if jsonData['lb']['enabled']:
         tree.find('simulation/algorithm/parallelisation').attrib['type'] = "StaticIrregDomainDecomposition"
-        tree.find('simulation/algorithm/parallelisation').append(convertJsonLBtoXML(jsonData['lb']['ratios']))
+        tree.find('simulation/algorithm/parallelisation').append(convertJsonLBtols1XML(jsonData['lb']['ratios']))
 
     tree.find('simulation/ensemble/domain/lx').text = str(jsonData['scenario']['boxSize'])
     tree.find('simulation/ensemble/domain/ly').text = str(jsonData['scenario']['boxSize'])
@@ -297,7 +304,7 @@ def main(argv):
             tree.find('loglevel').text = "INFO"
         if jsonData['lb']['enabled']:
             tree.find('simulation/algorithm/parallelisation').attrib['type'] = "StaticIrregDomainDecomposition"
-            tree.find('simulation/algorithm/parallelisation').append(convertJsonLBtoXML(jsonData['lb']['ratios']))
+            tree.find('simulation/algorithm/parallelisation').append(convertJsonLBtols1XML(jsonData['lb']['ratios']))
         ET.indent(tree, '  ')
         treeF.write(os.path.join(jsonData['paths']['output'],'vle','config_6_dropletLoad.xml'), encoding='UTF-8', xml_declaration=True)
 
@@ -318,9 +325,36 @@ def main(argv):
         tree.find("couette-test/microscopic-solver").attrib["temperature"] = str(jsonData['scenario']['temperature'])
         tree.find("couette-test/microscopic-solver").attrib["number-md-simulations"] = str(jsonData['scenario']['mamicoNumMultiMD'])
         tree.find("couette-test/microscopic-solver").attrib["density"] = str(rhov)
+
+        tree.find("mamico/coupling-cell-configuration").attrib["cell-size"] = "{0} ; {0} ; {0}".format(str(jsonData['scenario']['mamicoCellsize']))
         tree.find("mamico/boundary-force").attrib["density"] = str(rhov)
         tree.find("mamico/boundary-force").attrib["temperature"] = str(jsonData['scenario']['temperature'])
+
+        tree.find("molecular-dynamics/molecule-configuration").attrib["mass"] = str(jsonData['component']['mass'])
+        tree.find("molecular-dynamics/molecule-configuration").attrib["sigma"] = str(jsonData['component']['sigma'])
+        tree.find("molecular-dynamics/molecule-configuration").attrib["epsilon"] = str(jsonData['component']['epsilon'])
         tree.find("molecular-dynamics/molecule-configuration").attrib["temperature"] = str(jsonData['scenario']['temperature'])
+
+        if jsonData['lb']['enabled']:
+            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["decomposition-type"] = "static-irreg-rect-grid"
+            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["x"] = convertLBRowtoMamicoRow(jsonData["lb"]["ratios"][0])
+            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["y"] = convertLBRowtoMamicoRow(jsonData["lb"]["ratios"][1])
+            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["z"] = convertLBRowtoMamicoRow(jsonData["lb"]["ratios"][2])
+        else:
+            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["decomposition-type"] = "default"
+        
+        tree.find("molecular-dynamics/simulation-configuration").attrib["number-of-timesteps"] = str(jsonData['scenario']['mamicoMDper'])
+
+        molPerD = rhov*(jsonData['scenario']['boxSize']**3)
+        molPerD = round(molPerD**(1./3.))
+
+        tree.find("molecular-dynamics/domain-configuration").attrib["molecules-per-direction"] = "{0} ; {0} ; {0}".format(str(molPerD))
+        tree.find("molecular-dynamics/domain-configuration").attrib["domain-size"] = "{0} ; {0} ; {0}".format(str(jsonData['scenario']['boxSize']))
+        tree.find("molecular-dynamics/domain-configuration").attrib["domain-offset"] = "{0} ; {0} ; {0}".format(str(20))
+        tree.find("molecular-dynamics/domain-configuration").attrib["cutoff-radius"] = str(jsonData['component']['sigma'] * 2.5)
+
+        ET.indent(tree, '  ')
+        treeF.write(os.path.join(jsonData['paths']['output'],'coupled','couette.xml'), encoding='UTF-8', xml_declaration=True)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
