@@ -167,6 +167,7 @@ def main(argv):
 
     liqJobID = ''
     vapJobID = ''
+    vleJobID = ''
 
     #liq
     os.chdir(liqPath)
@@ -217,6 +218,19 @@ def main(argv):
         print("Submitting: " + vlePath + "/job.sh")
         subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8')
 
+    #mamico
+    os.chdir(coupledPath)
+    with open(coupledPath + "/job.sh", 'w') as job:
+        job.write(header)
+        if vleJobID != '':
+            job.write(dependency+vleJobID+'\n')
+        job.write(modules)
+        job.write(commonPrerun.replace('<workDir>',coupledPath))
+        job.write(runComm.replace("<execPath>",jsonData["paths"]["mamicoExec"]))
+        job.write(commonPostrun)
+    if jsonData["job"]["runMamico"]:
+        print("Submitting: " + coupledPath + "/job.sh")
+        vapJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
 
 if __name__ == '__main__':
     main(sys.argv[1:])
