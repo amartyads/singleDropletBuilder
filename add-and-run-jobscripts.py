@@ -25,8 +25,7 @@ fi
 
 """
 
-slurmHeader = """
-#!/bin/bash
+slurmHeader = """#!/bin/bash
 
 #SBATCH --time=01:00:00   # walltime limit (HH:MM:SS)
 #SBATCH --nodes=1   # number of nodes
@@ -39,8 +38,7 @@ slurmHeader = """
 
 """
 
-pbsHeader = """
-#!/bin/bash
+pbsHeader = """#!/bin/bash
 
 #PBS -N droplet
 #PBS -l select=1:node_type=rome:mpiprocs=64:ompthreads=1
