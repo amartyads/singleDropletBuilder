@@ -88,6 +88,11 @@ liqConfigs = ["config_1_generateLiq.xml","config_2_replicateLiq.xml"]
 vapConfigs = ["config_3_generateVap.xml","config_4_replicateVap.xml"]
 vleConfigs = ["config_5_droplet.xml","config_6_dropletLoad.xml"]
 
+def getJobID(output, cluster):
+    if cluster == "hsuper":
+        return output.split()[-1]
+    return output
+
 def main(argv):
     with open('config.json') as jsonFile:
         jsonData = json.load(jsonFile)
@@ -180,6 +185,7 @@ def main(argv):
     if jsonData["job"]["runPrep"]:
         print("Submitting: " + liqPath + "/job.sh")
         liqJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+        liqJobID = getJobID(liqJobID, jsonData["job"]["system"])
 
     #vap
     os.chdir(vapPath)
@@ -194,6 +200,7 @@ def main(argv):
     if jsonData["job"]["runPrep"]:
         print("Submitting: " + vapPath + "/job.sh")
         vapJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+        vapJobID = getJobID(vapJobID, jsonData["job"]["system"])
 
     #vle
     #with buildcp=on and prod=off, config 5 is added to script, 6 isnt
@@ -215,6 +222,7 @@ def main(argv):
     if (jsonData["scenario"]["buildCP"] and jsonData["job"]["runPrep"]) or jsonData["job"]["runProd"]:
         print("Submitting: " + vlePath + "/job.sh")
         vleJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8')
+        vleJobID = getJobID(vleJobID, jsonData["job"]["system"])
 
     #mamico
     os.chdir(coupledPath)
