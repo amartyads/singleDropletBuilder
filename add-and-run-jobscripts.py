@@ -226,7 +226,7 @@ def main(argv):
             job.write(dependency+vleJobID+'\n')
         job.write(modules)
         job.write(commonPrerun.replace('<workDir>',coupledPath))
-        job.write(runComm.replace("<execPath>",jsonData["paths"]["mamicoExec"]))
+        job.write(runComm.replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
         job.write(commonPostrun)
     if jsonData["job"]["runMamico"]:
         print("Submitting: " + coupledPath + "/job.sh")
