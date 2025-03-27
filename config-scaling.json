@@ -1,0 +1,16 @@
+{
+    "runScripts" : false,
+    "scaleStart" : 0,
+    "scaleSteps" : 7,
+    "masterPath" : "../scaling",
+    "configs" : [
+        {
+            "name" : "default",
+            "ratios" : [[8,8,8,8],[8,8,8,8],[8,8,8,8]]
+        },
+        {
+            "name" : "balance13_5",
+            "ratios" :  [[13,5,5,13],[13,5,5,13],[13,5,5,13]]
+        }
+    ]
+}

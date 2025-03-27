@@ -1,0 +1,78 @@
+common:
+  preRun: |
+    export OMP_NUM_THREADS=1
+
+    cd "<workDir>"
+
+    set +e
+
+  postRun: |
+    rm -f AutoPas*
+
+  errCatch: |
+    var=$?
+    if [ "$var" -ne 0 ];then
+      rm -f AutoPas*
+      exit $var
+    fi
+
+manager:
+
+  slurm:
+    header: |
+      #!/bin/bash
+
+      #SBATCH --time=01:00:00   # walltime limit (HH:MM:SS)
+      #SBATCH --nodes=1   # number of nodes
+      #SBATCH --ntasks-per-node=64
+      #SBATCH --cpus-per-task=1   # processor core(s) per node
+      #SBATCH --partition=small    # partition
+      #SBATCH --job-name="droplet"
+      #SBATCH --output="drop%j" # job standard output file (%j replaced by job id)
+      #SBATCH --hint=nomultithread
+    
+    dependency: |-
+      #SBATCH --dependency=afterok:
+
+    dependencySep: ","
+
+  pbs:
+    header: |
+      #!/bin/bash
+
+      #PBS -N droplet
+      #PBS -l select=1:node_type=rome:mpiprocs=64:ompthreads=1
+      #PBS -l walltime=01:00:00
+      #PBS -j oe
+      #PBS -o output
+    
+    dependency: |-
+      #PBS -W depend=afterok:
+
+    dependencySep: ":"
+
+system:
+
+  hsuper:
+    modules: |
+      set -e
+
+      ml gcc
+      ml mpi
+
+    runComm: |
+      srun <execPath> <configFile>
+    
+    exec: "sbatch job.sh"
+
+  hawk:
+    modules: |
+      set -e
+
+      ml gcc
+      ml openmpi/5.0.5
+    
+    runComm: |
+      mpirun -n 64 <execPath> <configFile>
+    
+    exec: "qsub job.sh"

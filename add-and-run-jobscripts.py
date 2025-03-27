@@ -1,88 +1,7 @@
 #! /usr/bin/env python3
 
 import sys, getopt, os, json, subprocess, shlex
-
-commonPrerun = """
-export OMP_NUM_THREADS=1
-
-cd "<workDir>"
-
-set +e
-
-"""
-
-commonPostrun = """
-rm -f AutoPas*
-
-"""
-
-commonErrCatch = """
-var=$?
-if [ "$var" -ne 0 ];then
-    rm -f AutoPas*
-    exit $var
-fi
-
-"""
-
-slurmHeader = """#!/bin/bash
-
-#SBATCH --time=01:00:00   # walltime limit (HH:MM:SS)
-#SBATCH --nodes=1   # number of nodes
-#SBATCH --ntasks-per-node=64
-#SBATCH --cpus-per-task=1   # processor core(s) per node
-#SBATCH --partition=small    # partition
-#SBATCH --job-name="droplet"
-#SBATCH --output="drop%j" # job standard output file (%j replaced by job id)
-#SBATCH --hint=nomultithread
-
-"""
-
-pbsHeader = """#!/bin/bash
-
-#PBS -N droplet
-#PBS -l select=1:node_type=rome:mpiprocs=64:ompthreads=1
-#PBS -l walltime=01:00:00
-#PBS -j oe
-#PBS -o output
-"""
-
-slurmDependency = """
-#SBATCH --dependency=afterok:"""
-slurmDependencySep = ","
-
-pbsDependency = """
-#PBS -W depend=afterok:"""
-pbsDependencySep = ":"
-
-hsuperModules = """
-set -e
-
-ml gcc
-ml mpi
-
-"""
-
-hawkModules = """
-set -e
-
-ml gcc
-ml openmpi/5.0.5
-
-"""
-
-hsuperRunComm = """
-srun <execPath> <configFile>
-
-"""
-
-hawkRunComm = """
-mpirun -n 64 <execPath> <configFile>
-
-"""
-
-hsuperExec = "sbatch job.sh"
-hawkExec = "qsub job.sh"
+import yaml
 
 liqConfigs = ["config_1_generateLiq.xml","config_2_replicateLiq.xml"]
 vapConfigs = ["config_3_generateVap.xml","config_4_replicateVap.xml"]
@@ -94,8 +13,11 @@ def getJobID(output, cluster):
     return output
 
 def main(argv):
-    with open('config.json') as jsonFile:
+    with open('config.json','r') as jsonFile:
         jsonData = json.load(jsonFile)
+
+    with open('job-snips.yaml','r') as file:
+        jobSnips = yaml.safe_load(file)
 
     #overwrite with args
     helpText = f"""add-and-run-jobscripts.py
@@ -132,31 +54,13 @@ def main(argv):
         if jsonData['stack']['mamico']:
             os.makedirs()
 
-    #decisions
-    if jsonData["job"]["manager"] == 'slurm':
-        header = slurmHeader
-        dependency = slurmDependency
-        dependencySep = slurmDependencySep
-    elif jsonData["job"]["manager"] == 'pbs':
-        header = pbsHeader
-        dependency = pbsDependency
-        dependencySep = pbsDependencySep
-    else:
-        print("job manager not supported")
-        sys.exit(2)
+    header = jobSnips["manager"][jsonData["job"]["manager"]]["header"]
+    dependency = jobSnips["manager"][jsonData["job"]["manager"]]["dependency"]
+    dependencySep = jobSnips["manager"][jsonData["job"]["manager"]]["dependencySep"]
 
-
-    if jsonData["job"]["system"] == 'hsuper':
-        modules = hsuperModules
-        runComm = hsuperRunComm
-        exec = hsuperExec
-    elif jsonData["job"]["system"] == 'hawk':
-        modules = hawkModules
-        runComm = hawkRunComm
-        exec = hawkExec
-    else:
-        print("cluster not supported")
-        sys.exit(2)
+    modules = jobSnips["system"][jsonData["job"]["system"]]["modules"]
+    runComm = jobSnips["system"][jsonData["job"]["system"]]["runComm"]
+    exec = jobSnips["system"][jsonData["job"]["system"]]["exec"]
 
     if jsonData["stack"]["autopasPrep"]:
         prepExec = jsonData["paths"]["ls1APExec"]
@@ -177,11 +81,11 @@ def main(argv):
     with open(liqPath + "/job.sh", 'w') as job:
         job.write(header)
         job.write(modules)
-        job.write(commonPrerun.replace('<workDir>',liqPath))
+        job.write(jobSnips["common"]["preRun"].replace('<workDir>',liqPath))
         job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",liqConfigs[0]))
-        job.write(commonErrCatch)
+        job.write(jobSnips["common"]["errCatch"])
         job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",liqConfigs[1]))
-        job.write(commonPostrun)
+        job.write(jobSnips["common"]["postRun"])
     if jsonData["job"]["runPrep"]:
         print("Submitting: " + liqPath + "/job.sh")
         liqJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
@@ -192,11 +96,11 @@ def main(argv):
     with open(vapPath + "/job.sh", 'w') as job:
         job.write(header)
         job.write(modules)
-        job.write(commonPrerun.replace('<workDir>',vapPath))
+        job.write(jobSnips["common"]["preRun"].replace('<workDir>',vapPath))
         job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",vapConfigs[0]))
-        job.write(commonErrCatch)
+        job.write(jobSnips["common"]["errCatch"])
         job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",vapConfigs[1]))
-        job.write(commonPostrun)
+        job.write(jobSnips["common"]["postRun"])
     if jsonData["job"]["runPrep"]:
         print("Submitting: " + vapPath + "/job.sh")
         vapJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
@@ -210,15 +114,15 @@ def main(argv):
         if liqJobID != '' and vapJobID != '':
             job.write(dependency+liqJobID+dependencySep+vapJobID+'\n')
         job.write(modules)
-        job.write(commonPrerun.replace('<workDir>',vlePath))
+        job.write(jobSnips["common"]["preRun"].replace('<workDir>',vlePath))
         if jsonData["scenario"]["buildCP"]:
             job.write(runComm.replace("<execPath>",prepExec).replace("<configFile>",vleConfigs[0]))
-            job.write(commonErrCatch)
+            job.write(jobSnips["common"]["errCatch"])
             if jsonData["job"]["runProd"]:
                 job.write(runComm.replace("<execPath>",prodExec).replace("<configFile>",vleConfigs[1]))
         else:
             job.write(runComm.replace("<execPath>",prodExec).replace("<configFile>",vleConfigs[0]))
-        job.write(commonPostrun)
+        job.write(jobSnips["common"]["postRun"])
     if (jsonData["scenario"]["buildCP"] and jsonData["job"]["runPrep"]) or jsonData["job"]["runProd"]:
         print("Submitting: " + vlePath + "/job.sh")
         vleJobID = subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8')
@@ -231,9 +135,9 @@ def main(argv):
         if vleJobID != '':
             job.write(dependency+vleJobID+'\n')
         job.write(modules)
-        job.write(commonPrerun.replace('<workDir>',coupledPath))
+        job.write(jobSnips["common"]["preRun"].replace('<workDir>',coupledPath))
         job.write(runComm.replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
-        job.write(commonPostrun)
+        job.write(jobSnips["common"]["postRun"])
     if jsonData["job"]["runMamico"]:
         print("Submitting: " + coupledPath + "/job.sh")
         subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
