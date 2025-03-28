@@ -41,7 +41,7 @@ manager:
       #!/bin/bash
 
       #PBS -N <jobName>
-      #PBS -l select=<numNodes>:node_type=rome:mpiprocs=64:ompthreads=1
+      #PBS -l select=<numNodes>:node_type=rome:mpiprocs=128:ompthreads=1
       #PBS -l walltime=<wallTime>
       #PBS -j oe
       #PBS -o output
@@ -73,6 +73,6 @@ system:
       ml openmpi/5.0.5
     
     runComm: |
-      mpirun -n 64 <execPath> <configFile>
+      mpirun -n <numProcs> <execPath> <configFile>
     
     exec: "qsub job.sh"

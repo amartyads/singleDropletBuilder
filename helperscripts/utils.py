@@ -41,8 +41,17 @@ def getJobID(output, cluster):
         return output.split()[-1]
     return output
 
-def getPartition(clusterName, numNodes):
-    return ' '
+def getPartition(clusterName, numNodes, maxWall=24, shared=False):
+    if clusterName == 'hawk':
+        return ''
+    if clusterName == 'hsuper':
+        if numNodes <= 5:
+            return 'small'
+        if numNodes <= 32:
+            return 'medium-s'
+        if numNodes <= 64:
+            return 'medium-m'
+        return 'medium-l'
 
 def zeroPad(digits):
     maxDigs = len(str(max(digits)))

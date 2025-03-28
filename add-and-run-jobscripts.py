@@ -26,7 +26,7 @@ def main(argv):
 
     # input: scenario size, droplet diameter, autopas/ls1, 100save y/n, mamico y/n
     try:
-        opts, args = getopt.getopt(argv, "he:d:", ["help","runPrep=","runProd="])
+        opts, args = getopt.getopt(argv, "he:d:m:", ["help","runPrep=","runProd=","runMamico="])
     except:
         print(helpText)
         sys.exit(2)
@@ -38,6 +38,8 @@ def main(argv):
             jsonData["job"]["runPrep"] = strtobool(arg)
         elif opt in ("-d", "--runProd"):
             jsonData["job"]["runProd"] = strtobool(arg)
+        elif opt in ("-m", "--runMamico"):
+            jsonData["job"]["runMamico"] = strtobool(arg)
     curPath = os.getcwd()
     liqPath = os.path.join(curPath,jsonData['paths']['output'],'liq')
     vapPath = os.path.join(curPath,jsonData['paths']['output'],'vap')
@@ -61,6 +63,7 @@ def main(argv):
     exec = jobSnips["system"][jsonData["job"]["system"]]["exec"]
 
     header = header.replace("<wallTime>","01:00:00").replace("<numNodes>","1").replace("<partition>","small").replace("<jobName>","droplet")
+    runComm = runComm.replace("<numProcs>","64")
 
     if jsonData["stack"]["autopasPrep"]:
         prepExec = jsonData["paths"]["ls1APExec"]

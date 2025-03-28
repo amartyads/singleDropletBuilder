@@ -48,8 +48,6 @@ def main(argv):
     
     # edit jobscript things
     header = jobSnips["manager"][jsonData["job"]["manager"]]["header"]
-    dependency = jobSnips["manager"][jsonData["job"]["manager"]]["dependency"]
-    dependencySep = jobSnips["manager"][jsonData["job"]["manager"]]["dependencySep"]
 
     modules = jobSnips["system"][jsonData["job"]["system"]]["modules"]
     runComm = jobSnips["system"][jsonData["job"]["system"]]["runComm"]
@@ -63,8 +61,8 @@ def main(argv):
     masterFolder = os.path.join(startPath,scaleData["masterPath"],folderName)
     
     # create config folders
-    numMultiMD = [2**x for x in range(scaleData["scaleStart"],scaleData["scaleSteps"])]
-    numMultiMDFolders = zeroPad(numMultiMD)
+    numNodes = [2**x for x in range(scaleData["scaleStart"],scaleData["scaleSteps"])]
+    numNodesSymbols = zeroPad(numNodes)
     checkMakeFolder(masterFolder, True)
     
     # copy over common objects
@@ -93,7 +91,10 @@ def main(argv):
     treeF.write(os.path.join(masterFolder, 'mainls1config.xml'), encoding='UTF-8', xml_declaration=True)
 
     # create configs
+    maxStrongTime = 1440 #time in minutes
+    maxWeakTime = 60
     for config in scaleData["configs"]:
+        time = maxStrongTime
         configFolder = os.path.join(masterFolder, config["name"])
 
         treeF = ET.parse(os.path.join(masterFolder, 'maincouette.xml'))
@@ -106,44 +107,60 @@ def main(argv):
         # create strong scaling
         # strong scaling: same problem size, more resources
         checkMakeFolder(os.path.join(configFolder,"strong"))
-        for i in range(len(numMultiMD)):
-            checkMakeFolder(os.path.join(configFolder,"strong",numMultiMDFolders[i]))
-            os.chdir(os.path.join(configFolder,"strong",numMultiMDFolders[i]))
+        for i in range(len(numNodes)):
+            checkMakeFolder(os.path.join(configFolder,"strong",numNodesSymbols[i]))
+            os.chdir(os.path.join(configFolder,"strong",numNodesSymbols[i]))
             # make couette.xml
-            tree.find("couette-test/microscopic-solver").attrib["number-md-simulations"] = str(max(numMultiMD))
+            tree.find("couette-test/microscopic-solver").attrib["number-md-simulations"] = str(max(numNodes)*2)
             ET.indent(tree, '  ')
             treeF.write('couette.xml', encoding='UTF-8', xml_declaration=True)
             # copy ls1config
             shutil.copy(os.path.join(masterFolder,'mainls1config.xml'),'ls1config.xml')
             # make jobscript
             with open("job.sh", 'w') as job:
-                tempheader = header.replace("<wallTime>","01:00:00")
-                tempheader = tempheader.replace("<numNodes>",str(numMultiMD[i]))
-                tempheader = tempheader.replace("<partition>",getPartition(jsonData["job"]["system"],numMultiMD[i]))
-                tempheader = tempheader.replace("<jobName>","strong-"+str(numMultiMDFolders[i]))
+                tempheader = header.replace("<wallTime>", "{:02d}".format(time//60) + ':' + "{:02d}".format(time%60) + ':00')
+                tempheader = tempheader.replace("<numNodes>",str(numNodes[i]))
+                tempheader = tempheader.replace("<partition>",getPartition(jsonData["job"]["system"],numNodes[i]))
+                tempheader = tempheader.replace("<jobName>","strong-"+str(numNodesSymbols[i]))
                 job.write(tempheader)
                 job.write(modules)
                 job.write(jobSnips["common"]["preRun"].replace('<workDir>',os.getcwd()))
-                job.write(runComm.replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
+                job.write(runComm.replace("<numProcs>",str(128*numNodes[i])).replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
                 job.write(jobSnips["common"]["postRun"])
             if scaleData["runScripts"]:
                 print("Submitting: " + os.getcwd() + "/job.sh")
                 subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
             os.chdir(masterFolder)
+            time = max(time*2//3, 10)
 
 
         # create weak scaling
         # weak scaling: same problem size per resource
         checkMakeFolder(os.path.join(configFolder,"weak"))
-        for i in range(len(numMultiMD)):
-            checkMakeFolder(os.path.join(configFolder,"weak",numMultiMDFolders[i]))
+        for i in range(len(numNodes)):
+            checkMakeFolder(os.path.join(configFolder,"weak",numNodesSymbols[i]))
+            os.chdir(os.path.join(configFolder,"weak",numNodesSymbols[i]))
             # make couette.xml
-            tree.find("couette-test/microscopic-solver").attrib["number-md-simulations"] = str(numMultiMD[i])
+            tree.find("couette-test/microscopic-solver").attrib["number-md-simulations"] = str(numNodes[i]*2)
             ET.indent(tree, '  ')
-            treeF.write(os.path.join(configFolder,"weak",numMultiMDFolders[i],'couette.xml'), encoding='UTF-8', xml_declaration=True)
+            treeF.write(os.path.join('couette.xml'), encoding='UTF-8', xml_declaration=True)
             # copy ls1config
-            shutil.copy(os.path.join(masterFolder,'mainls1config.xml'),os.path.join(configFolder,"weak",numMultiMDFolders[i],'ls1config.xml'))
+            shutil.copy(os.path.join(masterFolder,'mainls1config.xml'),os.path.join('ls1config.xml'))
             # make jobscript
+            with open("job.sh", 'w') as job:
+                tempheader = header.replace("<wallTime>", "{:02d}".format(maxWeakTime//60) + ':' + "{:02d}".format(maxWeakTime%60) + ':00')
+                tempheader = tempheader.replace("<numNodes>",str(numNodes[i]))
+                tempheader = tempheader.replace("<partition>",getPartition(jsonData["job"]["system"],numNodes[i]))
+                tempheader = tempheader.replace("<jobName>","weak-"+str(numNodesSymbols[i]))
+                job.write(tempheader)
+                job.write(modules)
+                job.write(jobSnips["common"]["preRun"].replace('<workDir>',os.getcwd()))
+                job.write(runComm.replace("<numProcs>",str(128*numNodes[i])).replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
+                job.write(jobSnips["common"]["postRun"])
+            if scaleData["runScripts"]:
+                print("Submitting: " + os.getcwd() + "/job.sh")
+                subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+            os.chdir(masterFolder)
         
 
 if __name__ == '__main__':
