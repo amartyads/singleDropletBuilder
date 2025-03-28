@@ -68,8 +68,8 @@ def main(argv):
     # copy over common objects
     shutil.copy(os.path.join(jsonData['paths']['output'],'components.xml'), os.path.join(masterFolder,'components.xml'))
     shutil.copy(os.path.join(jsonData['paths']['output'],'mixing_2c.xml'), os.path.join(masterFolder,'mixing_2c.xml'))
-    #shutil.copy(os.path.join(jsonData['paths']['output'],'vle','cp_binary_droplet-1.restart.header.xml'), os.path.join(masterFolder,'cp_binary_droplet-1.restart.header.xml'))
-    #shutil.copy(os.path.join(jsonData['paths']['output'],'vle','cp_binary_droplet-1.restart.dat'), os.path.join(masterFolder,'cp_binary_droplet-1.restart.dat'))
+    shutil.copy(os.path.join(jsonData['paths']['output'],'vle','cp_binary_droplet-1.restart.header.xml'), os.path.join(masterFolder,'cp_binary_droplet-1.restart.header.xml'))
+    shutil.copy(os.path.join(jsonData['paths']['output'],'vle','cp_binary_droplet-1.restart.dat'), os.path.join(masterFolder,'cp_binary_droplet-1.restart.dat'))
     shutil.copy(os.path.join(jsonData['paths']['output'],'coupled','couette.xml'), os.path.join(masterFolder,'maincouette.xml'))
     shutil.copy(os.path.join(jsonData['paths']['output'],'coupled','ls1config.xml'), os.path.join(masterFolder,'mainls1config.xml'))
 
