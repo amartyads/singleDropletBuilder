@@ -38,7 +38,6 @@ def main(argv):
             jsonData["job"]["runPrep"] = strtobool(arg)
         elif opt in ("-d", "--runProd"):
             jsonData["job"]["runProd"] = strtobool(arg)
-    exit()
     curPath = os.getcwd()
     liqPath = os.path.join(curPath,jsonData['paths']['output'],'liq')
     vapPath = os.path.join(curPath,jsonData['paths']['output'],'vap')
