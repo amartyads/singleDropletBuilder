@@ -62,6 +62,8 @@ def main(argv):
     runComm = jobSnips["system"][jsonData["job"]["system"]]["runComm"]
     exec = jobSnips["system"][jsonData["job"]["system"]]["exec"]
 
+    header = header.replace("<wallTime>","01:00:00").replace("<numNodes>","1").replace("<partition>","small")
+
     if jsonData["stack"]["autopasPrep"]:
         prepExec = jsonData["paths"]["ls1APExec"]
     else:

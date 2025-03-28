@@ -2,6 +2,7 @@
     "runScripts" : false,
     "scaleStart" : 0,
     "scaleSteps" : 7,
+    "mamicoCyc" : 10,
     "masterPath" : "../scaling",
     "configs" : [
         {
