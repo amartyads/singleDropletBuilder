@@ -108,26 +108,6 @@
 			</outputplugin>
 -->
 		</output>
-
-		<plugin name="MaxCheck">
-			<control>
-				<start>0</start>
-				<frequency>1</frequency>
-				<stop>500</stop>
-			</control>
-			<targets>
-				<target cid="1" method="2">
-					<Fmax>10000</Fmax>
-					<vmax>2.</vmax>
-<!--			<vmax>2.874156111274848</vmax> -->
-				</target>
-				<target cid="2" method="2">
-					<Fmax>10000</Fmax>
-					<vmax>2.</vmax>
-<!--			<vmax>2.874156111274848</vmax> -->
-				</target>
-			</targets>
-		</plugin>
 	
 	</simulation>
 
