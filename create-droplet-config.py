@@ -2,6 +2,11 @@
 
 import sys, getopt, os, json, shutil
 import xml.etree.cElementTree as ET
+
+CUR_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(CUR_DIR))
+from helperscripts.ljts import sat_vrabec2006
+from helperscripts.utils import strtobool,convertJsonLBtols1XML,convertLBRowtoMamicoRow
 # input: scenario size, droplet diameter, autopas/ls1, 100save y/n, mamico y/n
 # create folders
 # calculate density
@@ -35,29 +40,6 @@ lcText = """
 autoPXML = ET.fromstring(autopasText)
 lcXML = ET.fromstring(lcText)
 
-def convertJsonLBtols1XML(lb):
-    textXML = "<subdomainWeights>\n<x>"
-    for item in lb[0]:
-        textXML += str(item) + ','
-    textXML = textXML[:-1]
-    textXML += "</x>\n<y>"
-    for item in lb[1]:
-        textXML += str(item) + ','
-    textXML = textXML[:-1]
-    textXML += "</y>\n<z>"
-    for item in lb[2]:
-        textXML += str(item) + ','
-    textXML = textXML[:-1]
-    textXML += "</z>\n</subdomainWeights>"
-    return ET.fromstring(textXML)
-
-def convertLBRowtoMamicoRow(lb):
-    ret = str(lb[0])
-    for i in range(len(lb)-1):
-        ret += ' ; ' + str(lb[i+1])
-    return ret
-
-
 def doCommonXMLChanges(tree, ts, builder):
     tree.find('simulation/ensemble/temperature').text = str(jsonData['scenario']['temperature'])
     tree.find('simulation/algorithm/cutoffs/defaultCutoff').text = str(jsonData['component']['sigma'] * 2.5)
@@ -82,10 +64,6 @@ def doCommonXMLChanges(tree, ts, builder):
 
 
 def main(argv):
-    CUR_DIR = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.dirname(CUR_DIR))
-    from helperscripts.ljts import sat_vrabec2006
-
     #load from json
     global jsonData
     with open('config.json') as jsonFile:
@@ -119,9 +97,9 @@ def main(argv):
         elif opt in ("-t","--temp"):
             jsonData['scenario']['temperature'] = float(arg)
         elif opt in ("-b", "--buildCP"):
-            jsonData['scenario']['buildCP'] = bool(arg)
+            jsonData['scenario']['buildCP'] = strtobool(arg)
         elif opt in ("-m", "--mamico"):
-            jsonData['stack']['mamico'] = bool(arg)
+            jsonData['stack']['mamico'] = strtobool(arg)
         elif opt in ("-o", "--destination"):
             jsonData['paths']['output'] = arg
         elif opt in ("-j", "--jobSys"):
@@ -130,7 +108,7 @@ def main(argv):
             else:
                 print(helpText)
                 sys.exit(2)
-
+    
     #calculate density
     Re=(jsonData['scenario']['dropDia']*10/2.)/jsonData['component']['sigma']       #calculate reduced radius of droplet
     t=jsonData['scenario']['temperature']/jsonData['component']['epsilon']    #calculate reduced temperature

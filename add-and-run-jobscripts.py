@@ -3,14 +3,13 @@
 import sys, getopt, os, json, subprocess, shlex
 import yaml
 
+CUR_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(CUR_DIR))
+from helperscripts.utils import strtobool,getJobID
+
 liqConfigs = ["config_1_generateLiq.xml","config_2_replicateLiq.xml"]
 vapConfigs = ["config_3_generateVap.xml","config_4_replicateVap.xml"]
 vleConfigs = ["config_5_droplet.xml","config_6_dropletLoad.xml"]
-
-def getJobID(output, cluster):
-    if cluster == "hsuper":
-        return output.split()[-1]
-    return output
 
 def main(argv):
     with open('config.json','r') as jsonFile:
@@ -36,10 +35,10 @@ def main(argv):
             print(helpText)
             sys.exit()
         elif opt in ("-e", "--runPrep"):
-            jsonData["job"]["runPrep"] = bool(arg)
+            jsonData["job"]["runPrep"] = strtobool(arg)
         elif opt in ("-d", "--runProd"):
-            jsonData["job"]["runProd"] = bool(arg)
-
+            jsonData["job"]["runProd"] = strtobool(arg)
+    exit()
     curPath = os.getcwd()
     liqPath = os.path.join(curPath,jsonData['paths']['output'],'liq')
     vapPath = os.path.join(curPath,jsonData['paths']['output'],'vap')
@@ -62,7 +61,7 @@ def main(argv):
     runComm = jobSnips["system"][jsonData["job"]["system"]]["runComm"]
     exec = jobSnips["system"][jsonData["job"]["system"]]["exec"]
 
-    header = header.replace("<wallTime>","01:00:00").replace("<numNodes>","1").replace("<partition>","small")
+    header = header.replace("<wallTime>","01:00:00").replace("<numNodes>","1").replace("<partition>","small").replace("<jobName>","droplet")
 
     if jsonData["stack"]["autopasPrep"]:
         prepExec = jsonData["paths"]["ls1APExec"]

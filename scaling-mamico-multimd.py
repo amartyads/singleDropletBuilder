@@ -4,21 +4,13 @@
 # strong scaling
 # weak scaling
 
-import json, sys, getopt, subprocess, shlex, os, shutil
+import json, sys, getopt, subprocess, shlex, os, shutil, yaml
 
 import xml.etree.cElementTree as ET
 
-
-def convertLBRowtoMamicoRow(lb):
-    ret = str(lb[0])
-    for i in range(len(lb)-1):
-        ret += ' ; ' + str(lb[i+1])
-    return ret
-
-def zeroPad(digits):
-    maxDigs = len(str(max(digits)))
-    toRet = [str(x).zfill(maxDigs) for x in digits]
-    return toRet
+CUR_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(CUR_DIR))
+from helperscripts.utils import strtobool,getPartition,convertLBRowtoMamicoRow,zeroPad
 
 def checkMakeFolder(path, printPath=False):
     if not os.path.exists(path):
@@ -32,6 +24,9 @@ def main(argv):
     
     with open('config-scaling.json') as jsonFile:
         scaleData = json.load(jsonFile)
+    
+    with open('job-snips.yaml','r') as file:
+        jobSnips = yaml.safe_load(file)
 
     #overwrite with args
     helpText = f"""scaling-mamico-multimd.py
@@ -49,8 +44,19 @@ def main(argv):
             print(helpText)
             sys.exit()
         elif opt in ("-r", "--runScripts"):
-            scaleData["runScripts"] = bool(arg)
+            scaleData["runScripts"] = strtobool(arg)
     
+    # edit jobscript things
+    header = jobSnips["manager"][jsonData["job"]["manager"]]["header"]
+    dependency = jobSnips["manager"][jsonData["job"]["manager"]]["dependency"]
+    dependencySep = jobSnips["manager"][jsonData["job"]["manager"]]["dependencySep"]
+
+    modules = jobSnips["system"][jsonData["job"]["system"]]["modules"]
+    runComm = jobSnips["system"][jsonData["job"]["system"]]["runComm"]
+    exec = jobSnips["system"][jsonData["job"]["system"]]["exec"]
+
+    runComm = runComm.replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",'')
+
     # create master folder name
     folderName = "s" + str(jsonData["scenario"]["boxSize"]) + "d" + str(jsonData["scenario"]["dropDia"]) + "t" + str(jsonData["scenario"]["temperature"]).replace('.','_')
     startPath = os.getcwd()
@@ -73,7 +79,6 @@ def main(argv):
     treeF = ET.parse(os.path.join(masterFolder, 'mainls1config.xml'))
     tree = treeF.getroot()
     for tag in tree.findall(".//include"):
-        print(tag)
         if tag.attrib["query"] == "/components/moleculetype":
             tag.text = os.path.join(masterFolder,'components.xml')
         if tag.attrib["query"] == "/mixing":
@@ -91,40 +96,49 @@ def main(argv):
     for config in scaleData["configs"]:
         configFolder = os.path.join(masterFolder, config["name"])
 
+        treeF = ET.parse(os.path.join(masterFolder, 'maincouette.xml'))
+        tree = treeF.getroot()
+        tree.find("couette-test/coupling").attrib["coupling-cycles"] = str(scaleData['mamicoCyc'])
+        tree.find("molecular-dynamics/domain-decomp-configuration").attrib["decomposition-type"] = "static-irreg-rect-grid"
+        tree.find("molecular-dynamics/domain-decomp-configuration").attrib["x"] = convertLBRowtoMamicoRow(config["ratios"][0])
+        tree.find("molecular-dynamics/domain-decomp-configuration").attrib["y"] = convertLBRowtoMamicoRow(config["ratios"][1])
+        tree.find("molecular-dynamics/domain-decomp-configuration").attrib["z"] = convertLBRowtoMamicoRow(config["ratios"][2])
         # create strong scaling
         # strong scaling: same problem size, more resources
         checkMakeFolder(os.path.join(configFolder,"strong"))
         for i in range(len(numMultiMD)):
             checkMakeFolder(os.path.join(configFolder,"strong",numMultiMDFolders[i]))
+            os.chdir(os.path.join(configFolder,"strong",numMultiMDFolders[i]))
             # make couette.xml
-            treeF = ET.parse(os.path.join(masterFolder, 'maincouette.xml'))
-            tree = treeF.getroot()
-            tree.find("couette-test/coupling").attrib["coupling-cycles"] = str(scaleData['mamicoCyc'])
             tree.find("couette-test/microscopic-solver").attrib["number-md-simulations"] = str(max(numMultiMD))
-            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["decomposition-type"] = "static-irreg-rect-grid"
-            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["x"] = convertLBRowtoMamicoRow(config["ratios"][0])
-            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["y"] = convertLBRowtoMamicoRow(config["ratios"][1])
-            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["z"] = convertLBRowtoMamicoRow(config["ratios"][2])
             ET.indent(tree, '  ')
-            treeF.write(os.path.join(configFolder,"strong",numMultiMDFolders[i],'couette.xml'), encoding='UTF-8', xml_declaration=True)
+            treeF.write('couette.xml', encoding='UTF-8', xml_declaration=True)
             # copy ls1config
-            shutil.copy(os.path.join(masterFolder,'mainls1config.xml'),os.path.join(configFolder,"strong",numMultiMDFolders[i],'ls1config.xml'))
+            shutil.copy(os.path.join(masterFolder,'mainls1config.xml'),'ls1config.xml')
             # make jobscript
-        
+            with open("job.sh", 'w') as job:
+                tempheader = header.replace("<wallTime>","01:00:00")
+                tempheader = tempheader.replace("<numNodes>",str(numMultiMD[i]))
+                tempheader = tempheader.replace("<partition>",getPartition(jsonData["job"]["system"],numMultiMD[i]))
+                tempheader = tempheader.replace("<jobName>","strong-"+str(numMultiMDFolders[i]))
+                job.write(tempheader)
+                job.write(modules)
+                job.write(jobSnips["common"]["preRun"].replace('<workDir>',os.getcwd()))
+                job.write(runComm.replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
+                job.write(jobSnips["common"]["postRun"])
+            if scaleData["runScripts"]:
+                print("Submitting: " + os.getcwd() + "/job.sh")
+                subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+            os.chdir(masterFolder)
+
+
         # create weak scaling
         # weak scaling: same problem size per resource
         checkMakeFolder(os.path.join(configFolder,"weak"))
         for i in range(len(numMultiMD)):
             checkMakeFolder(os.path.join(configFolder,"weak",numMultiMDFolders[i]))
             # make couette.xml
-            treeF = ET.parse(os.path.join(masterFolder, 'maincouette.xml'))
-            tree = treeF.getroot()
-            tree.find("couette-test/coupling").attrib["coupling-cycles"] = str(scaleData['mamicoCyc'])
             tree.find("couette-test/microscopic-solver").attrib["number-md-simulations"] = str(numMultiMD[i])
-            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["decomposition-type"] = "static-irreg-rect-grid"
-            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["x"] = convertLBRowtoMamicoRow(config["ratios"][0])
-            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["y"] = convertLBRowtoMamicoRow(config["ratios"][1])
-            tree.find("molecular-dynamics/domain-decomp-configuration").attrib["z"] = convertLBRowtoMamicoRow(config["ratios"][2])
             ET.indent(tree, '  ')
             treeF.write(os.path.join(configFolder,"weak",numMultiMDFolders[i],'couette.xml'), encoding='UTF-8', xml_declaration=True)
             # copy ls1config

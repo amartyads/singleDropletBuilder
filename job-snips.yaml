@@ -27,7 +27,7 @@ manager:
       #SBATCH --ntasks-per-node=64
       #SBATCH --cpus-per-task=1   # processor core(s) per node
       #SBATCH --partition=<partition>    # partition
-      #SBATCH --job-name="droplet"
+      #SBATCH --job-name=<jobName>
       #SBATCH --output="drop%j" # job standard output file (%j replaced by job id)
       #SBATCH --hint=nomultithread
     
@@ -40,7 +40,7 @@ manager:
     header: |
       #!/bin/bash
 
-      #PBS -N droplet
+      #PBS -N <jobName>
       #PBS -l select=<numNodes>:node_type=rome:mpiprocs=64:ompthreads=1
       #PBS -l walltime=<wallTime>
       #PBS -j oe
