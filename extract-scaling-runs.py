@@ -52,8 +52,9 @@ for config in scaleData["configs"]:
                         walltimeCumulative += float(stringWalltime)
             else:
                 print(f"Error in {config["name"]},{runType},{numNode}")
-                print(rowsList)
-                sys.exit(2)
+                continue
+                #print(rowsList)
+                #sys.exit(2)
             dict = {'Folder':chpath,'Config':config["name"],'RunType':runType,'NumNodes':numNode,'CumulativeWalltime':walltimeCumulative,'NoOutputs':len(globobj),'AvgWalltime':walltimeCumulative/len(globobj)}
             rowsList.append(dict)
 
