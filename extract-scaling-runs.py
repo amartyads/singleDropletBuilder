@@ -54,7 +54,7 @@ for config in scaleData["configs"]:
                 print(f"Error in {config["name"]},{runType},{numNode}")
                 print(rowsList)
                 sys.exit(2)
-            dict = {'Folder':chpath,'Config':config["name"],'RunType':runType,'NumNodes':numNodes,'CumulativeWalltime':walltimeCumulative,'NoOutputs':len(globobj),'AvgWalltime':walltimeCumulative/len(globobj)}
+            dict = {'Folder':chpath,'Config':config["name"],'RunType':runType,'NumNodes':numNode,'CumulativeWalltime':walltimeCumulative,'NoOutputs':len(globobj),'AvgWalltime':walltimeCumulative/len(globobj)}
             rowsList.append(dict)
 
 df = pd.DataFrame(rowsList, columns=['Folder','Config','RunType','NumNodes','CumulativeWalltime','NoOutputs','AvgWalltime'])
