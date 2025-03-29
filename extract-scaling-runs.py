@@ -4,7 +4,6 @@ import os
 import sys
 import glob
 import json
-from file_read_backwards import FileReadBackwards
 import datetime as dt
 import pandas as pd
 
@@ -40,7 +39,7 @@ for config in scaleData["configs"]:
             walltimeCumulative = 0.0
             if len(globobj) >= 1:
                 for i in range(len(globobj)):
-                    with FileReadBackwards(globobj[i], encoding="utf-8") as file:
+                    with open(globobj[i], encoding="utf-8") as file:
                         for line in file:
                             if 'Finished all coupling cycles' in line:
                                 lineWalltime = line
