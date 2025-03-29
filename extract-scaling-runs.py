@@ -48,12 +48,13 @@ for config in scaleData["configs"]:
                         print(f"Error in {globobj[i]}")
                         sys.exit(2)
                     else:
-                        stringWalltime = lineWalltime[lineWalltime.find('after ')+5:-1].strip()
+                        stringWalltime = lineWalltime[lineWalltime.find('after ')+5:-2].strip()
                         walltimeCumulative += float(stringWalltime)
             else:
-                print(f"Error in {globobj[i]}")
+                print(f"Error in {config["name"]},{runType},{numNode}")
+                print(rowsList)
                 sys.exit(2)
-            dict = {'Folder':chpath,'Config':scaleData["configs"],'RunType':runType,'NumNodes':numNodes,'CumulativeWalltime':walltimeCumulative,'NoOutputs':len(globobj),'AvgWalltime':walltimeCumulative/len(globobj)}
+            dict = {'Folder':chpath,'Config':config["name"],'RunType':runType,'NumNodes':numNodes,'CumulativeWalltime':walltimeCumulative,'NoOutputs':len(globobj),'AvgWalltime':walltimeCumulative/len(globobj)}
             rowsList.append(dict)
 
 df = pd.DataFrame(rowsList, columns=['Folder','Config','RunType','NumNodes','CumulativeWalltime','NoOutputs','AvgWalltime'])
