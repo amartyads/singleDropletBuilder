@@ -33,9 +33,10 @@ def main(argv):
               --runScripts <1/0, default 0>
               """
 
-    # input: run y/n
+    # input: run y/n, delete prev outputs
+    deleteOutputs = False
     try:
-        opts, args = getopt.getopt(argv, "hr:", ["help","runScripts="])
+        opts, args = getopt.getopt(argv, "hr:d", ["help","runScripts=","deleteOutputs"])
     except:
         print(helpText)
         sys.exit(2)
@@ -45,7 +46,9 @@ def main(argv):
             sys.exit()
         elif opt in ("-r", "--runScripts"):
             scaleData["runScripts"] = strtobool(arg)
-    
+        elif opt in ("-d", "--deleteOutputs"):
+            deleteOutputs = True
+
     # edit jobscript things
     header = jobSnips["manager"][jsonData["job"]["manager"]]["header"]
 
@@ -127,6 +130,8 @@ def main(argv):
                 job.write(jobSnips["common"]["preRun"].replace('<workDir>',os.getcwd()))
                 job.write(runComm.replace("<numProcs>",str(128*numNodes[i])).replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
                 job.write(jobSnips["common"]["postRun"])
+            if(deleteOutputs):
+                subprocess.run(["rm","output"])
             if scaleData["runScripts"]:
                 print("Submitting: " + os.getcwd() + "/job.sh")
                 subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
@@ -157,6 +162,8 @@ def main(argv):
                 job.write(jobSnips["common"]["preRun"].replace('<workDir>',os.getcwd()))
                 job.write(runComm.replace("<numProcs>",str(128*numNodes[i])).replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
                 job.write(jobSnips["common"]["postRun"])
+            if(deleteOutputs):
+                subprocess.run(["rm","output"])
             if scaleData["runScripts"]:
                 print("Submitting: " + os.getcwd() + "/job.sh")
                 subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
