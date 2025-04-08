@@ -71,11 +71,11 @@ def main(argv):
                             for line in file:
                                 if 'Finished all coupling cycles' in line:
                                     lineWalltime = line
-                                if 'Time percen' in line:
-                                    readNextLine = True
                                 if readNextLine:
                                     timeBreakdown = line
                                     readNextLine = False
+                                if 'Time percen' in line:
+                                    readNextLine = True
                         if lineWalltime == '':
                             print(f"Error in {globobj[i]}")
                             sys.exit(2)
