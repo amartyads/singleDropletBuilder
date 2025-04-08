@@ -58,10 +58,12 @@ def main(argv):
     for config in scaleData["configs"]:
         for runType in runTypes:
             for numNode in numNodesSymbols:
+                readNextLine = False
                 chpath = os.path.join(config["name"],runType,numNode)
                 globobj = glob.glob(os.path.join(chpath,'output*'))
                 line = ''
                 lineWalltime = ''
+                timeBreakdown = ''
                 walltimeCumulative = 0.0
                 if len(globobj) >= 1:
                     for i in range(len(globobj)):
@@ -69,7 +71,11 @@ def main(argv):
                             for line in file:
                                 if 'Finished all coupling cycles' in line:
                                     lineWalltime = line
-                                    break
+                                if 'Time percen' in line:
+                                    readNextLine = True
+                                if readNextLine:
+                                    timeBreakdown = line
+                                    readNextLine = False
                         if lineWalltime == '':
                             print(f"Error in {globobj[i]}")
                             sys.exit(2)
@@ -81,10 +87,17 @@ def main(argv):
                     continue
                     #print(rowsList)
                     #sys.exit(2)
-                dict = {'Folder':chpath,'Config':config["name"],'RunType':runType,'NumNodes':numNode,'CumulativeWalltime':walltimeCumulative,'NoOutputs':len(globobj),'AvgWalltime':walltimeCumulative/len(globobj)}
+                timeBreakdown = [float(x.strip()) for x in timeBreakdown.split(',')]
+                dict = {'Folder':chpath,'Config':config["name"],'RunType':runType,'NumNodes':numNode,
+                        'CumulativeWalltime':walltimeCumulative,'NoOutputs':len(globobj),
+                        'AvgWalltime':walltimeCumulative/len(globobj),
+                        'Micro':timeBreakdown[0], 'Macro':timeBreakdown[1],
+                        'Filter':timeBreakdown[2], 'Other':timeBreakdown[3]}
                 rowsList.append(dict)
 
-    df = pd.DataFrame(rowsList, columns=['Folder','Config','RunType','NumNodes','CumulativeWalltime','NoOutputs','AvgWalltime'])
+    df = pd.DataFrame(rowsList, columns=['Folder','Config','RunType','NumNodes',
+                                         'CumulativeWalltime','NoOutputs','AvgWalltime', 'Micro', 'Macro',
+                                         'Filter', 'Other'])
     df.set_index('Folder', inplace=True)
     print(df)
     df.to_csv('./outputs'+ folderName +'.csv')
