@@ -5,9 +5,7 @@ import sys
 import glob
 import json
 import getopt
-import datetime as dt
 import pandas as pd
-
 
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(CUR_DIR))

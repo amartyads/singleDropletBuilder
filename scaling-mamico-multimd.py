@@ -31,6 +31,7 @@ def main(argv):
     #overwrite with args
     helpText = f"""scaling-mamico-multimd.py
               --runScripts <1/0, default 0>
+              --deleteOutputs <delete previous outputs, 1/0, default 0>
               """
 
     # input: run y/n, delete prev outputs
@@ -131,7 +132,7 @@ def main(argv):
                 job.write(runComm.replace("<numProcs>",str(128*numNodes[i])).replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
                 job.write(jobSnips["common"]["postRun"])
             if(deleteOutputs):
-                subprocess.run(["rm","output"])
+                subprocess.run(["rm","output*"])
             if scaleData["runScripts"]:
                 print("Submitting: " + os.getcwd() + "/job.sh")
                 subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
@@ -163,7 +164,7 @@ def main(argv):
                 job.write(runComm.replace("<numProcs>",str(128*numNodes[i])).replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
                 job.write(jobSnips["common"]["postRun"])
             if(deleteOutputs):
-                subprocess.run(["rm","output"])
+                subprocess.run(["rm","output*"])
             if scaleData["runScripts"]:
                 print("Submitting: " + os.getcwd() + "/job.sh")
                 subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()

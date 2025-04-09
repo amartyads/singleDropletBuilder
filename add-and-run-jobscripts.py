@@ -22,6 +22,7 @@ def main(argv):
     helpText = f"""add-and-run-jobscripts.py
               --runPrep <1/0, default 0>
               --runProd <1/0, default 0>
+              --runMamico <1/0, default 0>
               """
 
     # input: scenario size, droplet diameter, autopas/ls1, 100save y/n, mamico y/n
