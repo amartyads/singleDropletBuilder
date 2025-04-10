@@ -78,7 +78,7 @@ def main(argv):
                         newText = job.read().replace('output','output'+str(i))
                     with open(f'job{i}.sh', "w") as f:
                         f.write(newText)
-                    subprocess.run(['rm','output'+str(i)])
+                    subprocess.run(shlex.split(f'rm -f output{i}'))
                     if scaleData["runScripts"]:
                         print("Submitting: " + os.getcwd() + f"/job{i}.sh")
                         subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
