@@ -84,21 +84,23 @@ def main(argv):
                             sys.exit(2)
                         else:
                             assert len(lineWalltime) == len(timeBreakdown)
-                            totNumOutputs += len(lineWalltime)
-                            for i in range(len(lineWalltime)):
-                                stringWalltime = lineWalltime[i][lineWalltime[i].find('after ')+5:-2].strip()
-                                walltimeCumulative += float(stringWalltime)
-                                timeBreakdownLine = [float(x.strip()) for x in timeBreakdown[i].split(',')]
-                                microCumulative += timeBreakdownLine[0] * float(stringWalltime) / 100.0
-                                macroCumulative += timeBreakdownLine[1] * float(stringWalltime) / 100.0
-                                filterCumulative += timeBreakdownLine[2] * float(stringWalltime) / 100.0
-                                otherCumulative += timeBreakdownLine[3] * float(stringWalltime) / 100.0
+                            
                 else:
                     print(f"Error in {config['name']},{runType},{numNode}")
                     continue
                     #print(rowsList)
                     #sys.exit(2)
                 
+                totNumOutputs = len(lineWalltime)
+                for i in range(len(lineWalltime)):
+                    stringWalltime = lineWalltime[i][lineWalltime[i].find('after ')+5:-2].strip()
+                    walltimeCumulative += float(stringWalltime)
+                    timeBreakdownLine = [float(x.strip()) for x in timeBreakdown[i].split(',')]
+                    microCumulative += timeBreakdownLine[0] * float(stringWalltime) / 100.0
+                    macroCumulative += timeBreakdownLine[1] * float(stringWalltime) / 100.0
+                    filterCumulative += timeBreakdownLine[2] * float(stringWalltime) / 100.0
+                    otherCumulative += timeBreakdownLine[3] * float(stringWalltime) / 100.0
+
                 dict = {'Folder':chpath,'Config':config["name"],'RunType':runType,'NumNodes':numNode,
                         'CumulativeWalltime':walltimeCumulative,'NoOutputs':totNumOutputs,
                         'AvgWalltime':walltimeCumulative/totNumOutputs,
