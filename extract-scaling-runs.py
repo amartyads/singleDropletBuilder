@@ -88,11 +88,11 @@ def main(argv):
                             for i in range(len(lineWalltime)):
                                 stringWalltime = lineWalltime[i][lineWalltime[i].find('after ')+5:-2].strip()
                                 walltimeCumulative += float(stringWalltime)
-                                timeBreakdown = [float(x.strip()) for x in timeBreakdown[i].split(',')]
-                                microCumulative += timeBreakdown[0] * float(stringWalltime) / 100.0
-                                macroCumulative += timeBreakdown[1] * float(stringWalltime) / 100.0
-                                filterCumulative += timeBreakdown[2] * float(stringWalltime) / 100.0
-                                otherCumulative += timeBreakdown[3] * float(stringWalltime) / 100.0
+                                timeBreakdownLine = [float(x.strip()) for x in timeBreakdown[i].split(',')]
+                                microCumulative += timeBreakdownLine[0] * float(stringWalltime) / 100.0
+                                macroCumulative += timeBreakdownLine[1] * float(stringWalltime) / 100.0
+                                filterCumulative += timeBreakdownLine[2] * float(stringWalltime) / 100.0
+                                otherCumulative += timeBreakdownLine[3] * float(stringWalltime) / 100.0
                 else:
                     print(f"Error in {config['name']},{runType},{numNode}")
                     continue
