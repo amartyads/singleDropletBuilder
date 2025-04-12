@@ -60,37 +60,50 @@ def main(argv):
                 chpath = os.path.join(config["name"],runType,numNode)
                 globobj = glob.glob(os.path.join(chpath,'output*'))
                 line = ''
-                lineWalltime = ''
-                timeBreakdown = ''
+                lineWalltime = []
+                timeBreakdown = []
                 walltimeCumulative = 0.0
+                microCumulative = 0.0
+                macroCumulative = 0.0
+                filterCumulative = 0.0
+                otherCumulative = 0.0
+                totNumOutputs = 0
                 if len(globobj) >= 1:
                     for i in range(len(globobj)):
                         with open(globobj[i], encoding="utf-8") as file:
                             for line in file:
                                 if 'Finished all coupling cycles' in line:
-                                    lineWalltime = line
+                                    lineWalltime.append(line)
                                 if readNextLine:
-                                    timeBreakdown = line
+                                    timeBreakdown.append(line)
                                     readNextLine = False
                                 if 'Time percen' in line:
                                     readNextLine = True
-                        if lineWalltime == '':
-                            print(f"Error in {globobj[i]}")
+                        if len(lineWalltime) == 0:
+                            print(f"Error in {chpath}")
                             sys.exit(2)
                         else:
-                            stringWalltime = lineWalltime[lineWalltime.find('after ')+5:-2].strip()
-                            walltimeCumulative += float(stringWalltime)
+                            assert len(lineWalltime) == len(timeBreakdown)
+                            totNumOutputs += len(lineWalltime)
+                            for i in range(len(lineWalltime)):
+                                stringWalltime = lineWalltime[i][lineWalltime[i].find('after ')+5:-2].strip()
+                                walltimeCumulative += float(stringWalltime)
+                                timeBreakdown = [float(x.strip()) for x in timeBreakdown[i].split(',')]
+                                microCumulative += timeBreakdown[0] * float(stringWalltime) / 100.0
+                                macroCumulative += timeBreakdown[1] * float(stringWalltime) / 100.0
+                                filterCumulative += timeBreakdown[2] * float(stringWalltime) / 100.0
+                                otherCumulative += timeBreakdown[3] * float(stringWalltime) / 100.0
                 else:
                     print(f"Error in {config['name']},{runType},{numNode}")
                     continue
                     #print(rowsList)
                     #sys.exit(2)
-                timeBreakdown = [float(x.strip()) for x in timeBreakdown.split(',')]
+                
                 dict = {'Folder':chpath,'Config':config["name"],'RunType':runType,'NumNodes':numNode,
-                        'CumulativeWalltime':walltimeCumulative,'NoOutputs':len(globobj),
-                        'AvgWalltime':walltimeCumulative/len(globobj),
-                        'Micro':timeBreakdown[0], 'Macro':timeBreakdown[1],
-                        'Filter':timeBreakdown[2], 'Other':timeBreakdown[3]}
+                        'CumulativeWalltime':walltimeCumulative,'NoOutputs':totNumOutputs,
+                        'AvgWalltime':walltimeCumulative/totNumOutputs,
+                        'Micro':microCumulative/totNumOutputs, 'Macro':macroCumulative/totNumOutputs,
+                        'Filter':filterCumulative/totNumOutputs, 'Other':otherCumulative/totNumOutputs}
                 rowsList.append(dict)
 
     df = pd.DataFrame(rowsList, columns=['Folder','Config','RunType','NumNodes',

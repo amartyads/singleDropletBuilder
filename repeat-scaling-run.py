@@ -81,7 +81,7 @@ def main(argv):
                     subprocess.run(shlex.split(f'rm -f output{i}'))
                     if scaleData["runScripts"]:
                         print("Submitting: " + os.getcwd() + f"/job{i}.sh")
-                        subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+                        subprocess.run(shlex.split(execCopy), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
                 os.chdir(masterFolder)
 
 if __name__ == '__main__':
