@@ -22,7 +22,7 @@ def main(argv):
         jobSnips = yaml.safe_load(file)
     
     #overwrite with args
-    helpText = f"""extract-scaling-runs.py
+    helpText = f"""repeat-scaling-run.py
               --boxSize <size of box in nm>
               --dropDia <droplet diameter in nm>
               --temp <temperature in reduced>

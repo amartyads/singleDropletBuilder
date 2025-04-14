@@ -95,8 +95,8 @@ def main(argv):
     treeF.write(os.path.join(masterFolder, 'mainls1config.xml'), encoding='UTF-8', xml_declaration=True)
 
     # create configs
-    maxStrongTime = 1440 #time in minutes
-    maxWeakTime = 60
+    maxStrongTime = scaleData['maxStrongTime'] #time in minutes
+    maxWeakTime = scaleData['maxWeakTime']
     for config in scaleData["configs"]:
         time = maxStrongTime
         configFolder = os.path.join(masterFolder, config["name"])

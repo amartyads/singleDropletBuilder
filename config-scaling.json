@@ -4,6 +4,8 @@
     "scaleSteps" : 7,
     "mamicoCyc" : 10,
     "masterPath" : "../scaling",
+    "maxStrongTime" : 100,
+    "maxWeakTime" : 60,
     "configs" : [
         {
             "name" : "default",
