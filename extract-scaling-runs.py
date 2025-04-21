@@ -102,7 +102,7 @@ def main(argv):
                         filterCumulative += timeBreakdownLine[2] * float(stringWalltime) / 100.0
                         otherCumulative += timeBreakdownLine[3] * float(stringWalltime) / 100.0
                     except:
-                        print(f"Error in {config['name']},{runType},{numNode}")
+                        print(f"Error in {config['name']},{runType},{numNode}: stringwalltime:{lineWalltime[i]} timebreakdown:{timeBreakdown[i]}")
                         continue
 
                 dict = {'Folder':chpath,'Config':config["name"],'RunType':runType,'NumNodes':numNode,
