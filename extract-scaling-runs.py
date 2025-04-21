@@ -54,7 +54,7 @@ def main(argv):
 
     rowsList = []
 
-    expFloatPattern=r'([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?'
+    expFloatPattern=r'((\s*)[+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?'
     timeBreakdownPattern = expFloatPattern + ',' + expFloatPattern + ',' + expFloatPattern + ',' + expFloatPattern
     timeBreakdownPattern = re.compile(timeBreakdownPattern, re.IGNORECASE)
 
