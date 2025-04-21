@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import os
+import re
 import sys
 import glob
 import json
@@ -53,10 +54,13 @@ def main(argv):
 
     rowsList = []
 
+    expFloatPattern=r'([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?'
+    timeBreakdownPattern = expFloatPattern + ',' + expFloatPattern + ',' + expFloatPattern + ',' + expFloatPattern
+    timeBreakdownPattern = re.compile(timeBreakdownPattern, re.IGNORECASE)
+
     for config in scaleData["configs"]:
         for runType in runTypes:
             for numNode in numNodesSymbols:
-                readNextLine = False
                 chpath = os.path.join(config["name"],runType,numNode)
                 globobj = glob.glob(os.path.join(chpath,'output*'))
                 line = ''
@@ -74,17 +78,13 @@ def main(argv):
                             for line in file:
                                 if 'Finished all coupling cycles' in line:
                                     lineWalltime.append(line)
-                                if readNextLine:
+                                if timeBreakdownPattern.search(line) != None:
                                     timeBreakdown.append(line)
-                                    readNextLine = False
-                                if 'Time percen' in line:
-                                    readNextLine = True
                         if len(lineWalltime) == 0:
                             print(f"Error in {chpath}")
                             sys.exit(2)
                         else:
-                            assert len(lineWalltime) == len(timeBreakdown)
-                            
+                            assert len(lineWalltime) == len(timeBreakdown)    
                 else:
                     print(f"Error in {config['name']},{runType},{numNode}")
                     continue
