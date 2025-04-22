@@ -6,10 +6,20 @@ import glob
 import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt, ticker as mticker
+import os,sys
+
+CUR_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(CUR_DIR))
+from helperscripts.utils import checkMakeFolder
+
 
 colors = ['co-', 'ro-', 'go-', 'bo-', 'mo-']
 colors2 = ['c--', 'r--', 'g--', 'b--', 'm--']
-files = glob.glob('../hawk-outputs/*120*.csv')
+csvSource = "hawk-outputs-parcfd"
+graphsDest = "graphs-parcfd"
+files = glob.glob(f'../{csvSource}/*120*.csv')
+
+checkMakeFolder(graphsDest, True)
 
 fig1 = plt.figure(figsize=(6,4))
 ax = fig1.add_subplot(111)
@@ -48,7 +58,7 @@ for file in files:
     ax.get_yaxis().set_minor_formatter(matplotlib.ticker.ScalarFormatter())
     ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
     ax.grid(True)
-    fig1.savefig(f"graphs/{filename}strong.pdf", format="pdf", bbox_inches='tight', dpi=300)
+    fig1.savefig(f"{graphsDest}/{filename}strong.pdf", format="pdf", bbox_inches='tight', dpi=300)
 
     # weak
     dfweak = df[df["RunType"] == 'weak'].copy()
@@ -76,4 +86,4 @@ for file in files:
     ax.get_yaxis().set_minor_formatter(matplotlib.ticker.ScalarFormatter())
     ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
     ax.grid(True)
-    fig1.savefig(f"graphs/{filename}weak.pdf", format="pdf", bbox_inches='tight', dpi=300)
+    fig1.savefig(f"{graphsDest}/{filename}weak.pdf", format="pdf", bbox_inches='tight', dpi=300)

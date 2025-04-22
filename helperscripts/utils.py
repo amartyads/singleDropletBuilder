@@ -1,4 +1,5 @@
 import xml.etree.cElementTree as ET
+import os
 
 def strtobool (val):
     """Convert a string representation of truth to true (1) or false (0).
@@ -57,3 +58,10 @@ def zeroPad(digits):
     maxDigs = len(str(max(digits)))
     toRet = [str(x).zfill(maxDigs) for x in digits]
     return toRet
+
+
+def checkMakeFolder(path, printPath=False):
+    if not os.path.exists(path):
+        if printPath:
+            print("Creating folder: " + path)
+        os.makedirs(path)

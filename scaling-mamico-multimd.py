@@ -10,13 +10,7 @@ import xml.etree.cElementTree as ET
 
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(CUR_DIR))
-from helperscripts.utils import strtobool,getPartition,convertLBRowtoMamicoRow,zeroPad
-
-def checkMakeFolder(path, printPath=False):
-    if not os.path.exists(path):
-        if printPath:
-            print("Creating folder: " + path)
-        os.makedirs(path)
+from helperscripts.utils import strtobool,getPartition,convertLBRowtoMamicoRow,zeroPad,checkMakeFolder
 
 def main(argv):
     with open('config.json') as jsonFile:
