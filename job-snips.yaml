@@ -24,7 +24,7 @@ manager:
 
       #SBATCH --time=<wallTime>   # walltime limit (HH:MM:SS)
       #SBATCH --nodes=<numNodes>   # number of nodes
-      #SBATCH --ntasks-per-node=64
+      #SBATCH --ntasks-per-node=72
       #SBATCH --cpus-per-task=1   # processor core(s) per node
       #SBATCH --partition=<partition>    # partition
       #SBATCH --job-name=<jobName>
