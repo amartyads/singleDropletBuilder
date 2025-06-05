@@ -6,7 +6,7 @@ import xml.etree.cElementTree as ET
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(CUR_DIR))
 from helperscripts.ljts import sat_vrabec2006
-from helperscripts.utils import strtobool,convertJsonLBtols1XML,convertLBRowtoMamicoRow
+from helperscripts.utils import strtobool,convertJsonLBtols1XML,convertLBRowtoMamicoRow,checkMakeFolder
 # input: scenario size, droplet diameter, autopas/ls1, 100save y/n, mamico y/n
 # create folders
 # calculate density
@@ -120,12 +120,12 @@ def main(argv):
     print(jsonData)
 
     #create folders
-    if not os.path.exists(jsonData['paths']['output']):
-        os.makedirs(os.path.join(jsonData['paths']['output'],'liq'))
-        os.makedirs(os.path.join(jsonData['paths']['output'],'vap'))
-        os.makedirs(os.path.join(jsonData['paths']['output'],'vle'))
-        if jsonData['stack']['mamico']:
-            os.makedirs(os.path.join(jsonData['paths']['output'],'coupled'))
+    
+    checkMakeFolder(os.path.join(jsonData['paths']['output'],'liq'))
+    checkMakeFolder(os.path.join(jsonData['paths']['output'],'vap'))
+    checkMakeFolder(os.path.join(jsonData['paths']['output'],'vle'))
+    if jsonData['stack']['mamico']:
+        checkMakeFolder(os.path.join(jsonData['paths']['output'],'coupled'))
     
     # extra xmls
     adiosText = f"""
