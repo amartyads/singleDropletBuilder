@@ -1,3 +1,4 @@
 /trial
 *.pyc
 /graphs*
+helperscripts/__pycache__
