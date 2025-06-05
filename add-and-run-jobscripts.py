@@ -5,7 +5,7 @@ import yaml
 
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(CUR_DIR))
-from helperscripts.utils import strtobool,getJobID
+from helperscripts.utils import strtobool,getJobID,checkMakeFolder
 
 liqConfigs = ["config_1_generateLiq.xml","config_2_replicateLiq.xml"]
 vapConfigs = ["config_3_generateVap.xml","config_4_replicateVap.xml"]
@@ -48,12 +48,11 @@ def main(argv):
     coupledPath = os.path.join(curPath,jsonData['paths']['output'],'coupled')
 
     #create folders
-    if not os.path.exists(jsonData['paths']['output']):
-        os.makedirs(liqPath)
-        os.makedirs(vapPath)
-        os.makedirs(vlePath)
-        if jsonData['stack']['mamico']:
-            os.makedirs()
+    checkMakeFolder(liqPath)
+    checkMakeFolder(vapPath)
+    checkMakeFolder(vlePath)
+    if jsonData['stack']['mamico']:
+        checkMakeFolder(coupledPath)
 
     header = jobSnips["manager"][jsonData["job"]["manager"]]["header"]
     dependency = jobSnips["manager"][jsonData["job"]["manager"]]["dependency"]
@@ -133,18 +132,19 @@ def main(argv):
         vleJobID = getJobID(vleJobID, jsonData["job"]["system"])
 
     #mamico
-    os.chdir(coupledPath)
-    with open(coupledPath + "/job.sh", 'w') as job:
-        job.write(header)
-        if vleJobID != '':
-            job.write(dependency+vleJobID+'\n')
-        job.write(modules)
-        job.write(jobSnips["common"]["preRun"].replace('<workDir>',coupledPath))
-        job.write(runComm.replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
-        job.write(jobSnips["common"]["postRun"])
-    if jsonData["job"]["runMamico"]:
-        print("Submitting: " + coupledPath + "/job.sh")
-        subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
+    if jsonData['stack']['mamico']:
+        os.chdir(coupledPath)
+        with open(coupledPath + "/job.sh", 'w') as job:
+            job.write(header)
+            if vleJobID != '':
+                job.write(dependency+vleJobID+'\n')
+            job.write(modules)
+            job.write(jobSnips["common"]["preRun"].replace('<workDir>',coupledPath))
+            job.write(runComm.replace("<execPath>",jsonData["paths"]["mamicoExec"]).replace("<configFile>",''))
+            job.write(jobSnips["common"]["postRun"])
+        if jsonData["job"]["runMamico"]:
+            print("Submitting: " + coupledPath + "/job.sh")
+            subprocess.run(shlex.split(exec), stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip()
 
 if __name__ == '__main__':
     main(sys.argv[1:])
