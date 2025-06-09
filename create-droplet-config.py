@@ -318,6 +318,9 @@ def main(argv):
             tree.find("molecular-dynamics/domain-decomp-configuration").attrib["x"] = convertLBRowtoMamicoRow(jsonData["lb"]["ratios"][0])
             tree.find("molecular-dynamics/domain-decomp-configuration").attrib["y"] = convertLBRowtoMamicoRow(jsonData["lb"]["ratios"][1])
             tree.find("molecular-dynamics/domain-decomp-configuration").attrib["z"] = convertLBRowtoMamicoRow(jsonData["lb"]["ratios"][2])
+            tree.find("molecular-dynamics/mpi-configuration").attrib["number-of-processes"] = \
+                convertLBRowtoMamicoRow([len(jsonData["lb"]["ratios"][0]), len(jsonData["lb"]["ratios"][1]), len(jsonData["lb"]["ratios"][2])])
+            
         else:
             tree.find("molecular-dynamics/domain-decomp-configuration").attrib["decomposition-type"] = "default"
         
