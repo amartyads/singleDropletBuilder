@@ -58,7 +58,7 @@ system:
       set -e
 
       ml gcc
-      ml mpi
+      ml intel-oneapi-mpi
 
     runComm: |
       srun <execPath> <configFile>
