@@ -61,6 +61,7 @@ def zeroPad(digits):
 
 
 def checkMakeFolder(path, printPath=False):
+    path = os.path.expanduser(path)
     if not os.path.exists(path):
         if printPath:
             print("Creating folder: " + path)
