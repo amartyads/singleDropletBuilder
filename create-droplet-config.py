@@ -119,6 +119,12 @@ def main(argv):
 
     print(jsonData)
 
+    #fix paths if needed
+    jsonData['paths']['output'] = os.path.expanduser(jsonData['paths']['output'])
+    jsonData['paths']['ls1LCExec'] = os.path.expanduser(jsonData['paths']['ls1LCExec'])
+    jsonData['paths']['ls1APExec'] = os.path.expanduser(jsonData['paths']['ls1APExec'])
+    jsonData['paths']['mamicoExec'] = os.path.expanduser(jsonData['paths']['mamicoExec'])
+
     #create folders
     
     checkMakeFolder(os.path.join(jsonData['paths']['output'],'liq'))
