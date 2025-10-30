@@ -36,6 +36,9 @@ manager:
 
     dependencySep: ","
 
+    footer: |-
+      echo "Job ${SLURM_JOB_ID} named ${SLURM_JOB_NAME} running from ${SLURM_SUBMIT_DIR} done" >> ~/completed_jobs.txt
+
   pbs:
     header: |
       #!/bin/bash
@@ -50,6 +53,8 @@ manager:
       #PBS -W depend=afterok:
 
     dependencySep: ":"
+
+    footer: ""
 
 system:
 
