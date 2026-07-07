@@ -44,5 +44,10 @@
         "enabled" : false,
         "filename" : "singleDrop.bp",
         "frequency" : 1000
+    },
+    "vtkOutput" : {
+        "enabled" : false,
+        "filename" : "vtk/vtkOutput",
+        "frequency" : 1000
     }
 }

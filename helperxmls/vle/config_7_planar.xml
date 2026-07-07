@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<mardyn version="20100525" >
+
+	<refunits type="SI" >
+		<length unit="nm">0.1</length>
+		<mass unit="u">1</mass>
+		<energy unit="K">1</energy>
+	</refunits>
+
+	<simulation type="MD" >
+		<integrator type="Leapfrog" >
+			<timestep unit="reduced" >0.00182367</timestep>
+		</integrator>
+
+		<run>
+			<currenttime>0.0</currenttime> 
+			<production>
+				<steps>200000</steps>
+			</production>
+		</run>
+
+		<ensemble type="NVT">
+			<!-- Nparticles determined by the input file -->
+			<temperature unit="reduced" >110</temperature>
+			<domain type="box">
+				<lx>360</lx>
+				<ly>100</ly>
+				<lz>100</lz>
+			</domain>
+
+			<components>
+				<include query="/components/moleculetype" >../components.xml</include>
+				<include query="/mixing">../mixing_2c.xml</include>
+			</components>
+
+			<phasespacepoint>
+				<generator name="MultiObjectGenerator">
+					<!-- vapor 1 -->
+					<objectgenerator>
+						<filler type="ReplicaFiller">
+							<input type="BinaryReader">
+								<header>../liq/cp_binary_repLiq-1.restart.header.xml</header>
+								<data>../liq/cp_binary_repLiq-1.restart.dat</data>
+							</input>
+						</filler>
+						
+						<object type="Cuboid">
+							<lower> <x>0</x> <y>0</y> <z>0</z> </lower>
+							<upper> <x>178.3042</x> <y>100</y> <z>100</z> </upper> <!-- y=3000 - sigma*0.5-->
+						</object>
+					</objectgenerator>
+					
+					<!-- vapor 2 -->
+					<objectgenerator>
+						<filler type="ReplicaFiller">
+							<input type="BinaryReader">
+								<header>../vap/cp_binary_repVap-1.restart.header.xml</header>
+								<data>../vap/cp_binary_repVap-1.restart.dat</data>
+							</input>
+						</filler>
+						
+						<object type="Cuboid">
+							<lower> <x>181.6958</x> <y>0</y> <z>0</z> </lower> <!-- y=3000 + sigma*0.5-->
+							<upper> <x>360</x> <y>100</y> <z>100</z> </upper>
+						</object>
+					</objectgenerator>
+				</generator>
+				<ignoreCheckpointTime>true</ignoreCheckpointTime>
+			</phasespacepoint>
+		</ensemble>
+
+		<algorithm>
+
+			<parallelisation type="DomainDecomposition">
+				<boundaries> <x>periodic</x><y>periodic</y><z>periodic</z> </boundaries>
+			</parallelisation>
+<!--			<parallelisation type="KDDecomposition">
+				<CommunicationScheme>direct</CommunicationScheme>
+				<updateFrequency>100000</updateFrequency>
+				<fullSearchThreshold>3</fullSearchThreshold>
+				<splitBiggestDimension>false</splitBiggestDimension>
+				<useVectorizationTuner>true</useVectorizationTuner>
+				<generateNewFiles>false</generateNewFiles>
+				<useExistingFiles>false</useExistingFiles>
+			</parallelisation> -->
+			<datastructure type="LinkedCells">
+				<cellsInCutoffRadius>1</cellsInCutoffRadius>-->
+				<!--<datastructure type="AutoPas">
+       <allowedContainers>linkedCells</allowedContainers>
+       <allowedTraversals>sli</allowedTraversals>
+       <dataLayout>SoA</dataLayout>
+       <newton3>enabled</newton3>-->
+			</datastructure>
+			<cutoffs type="CenterOfMass" >
+		<defaultCutoff unit="reduced" >8.479</defaultCutoff>
+				<radiusLJ unit="reduced" >8.479</radiusLJ>
+			</cutoffs>
+			<electrostatic type="ReactionField" >
+				<epsilon>1.0e+10</epsilon>
+			</electrostatic>
+		</algorithm>
+
+		<output>
+		
+<outputplugin name="Adios2Writer">
+                  <outputfile>planar.bp</outputfile>
+                  <adios2enginetype>BP4</adios2enginetype>
+                  <writefrequency>2000</writefrequency>
+                </outputplugin>
+
+
+		</output>
+	
+	</simulation>
+
+</mardyn>

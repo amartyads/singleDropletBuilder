@@ -5,7 +5,7 @@ from pathlib import Path
 import glob
 import numpy as np
 import matplotlib
-from matplotlib import pyplot as plt, ticker as mticker
+from matplotlib import pyplot as plt, ticker as mticker, rc
 import os,sys
 
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,6 +20,15 @@ graphsDest = "graphs-parcfd"
 files = glob.glob(f'../{csvSource}/*120*.csv')
 
 checkMakeFolder(graphsDest, True)
+
+# https://stackoverflow.com/questions/12322738/how-do-i-change-the-axis-tick-font-in-a-matplotlib-plot-when-rendering-using-lat
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "sans-serif",
+    "font.sans-serif": "DejaVu Sans",
+})
+rc('text.latex', preamble=r'\def\mathdefault{\mathsf}')
+
 
 fig1 = plt.figure(figsize=(6,4))
 ax = fig1.add_subplot(111)
@@ -45,8 +54,8 @@ for file in files:
         ax.plot(numNodes, dfstrong.loc[dfstrong["Config"] == configTypes[i], "IdealWalltime"], colors2[i], label=configTypesPretty[i]+' Ideal')
     #ax.set_xticks([x for x in range(0,numFolders)])
     ax.legend()
-    ax.set_title(f'Strong scaling - Droplet diameter {filename[5:-4]}', fontsize=14)
-    ax.set_xlabel('#nodes', fontsize=14)
+    #ax.set_title(f'Strong scaling - Droplet diameter {filename[5:-4]}', fontsize=14)
+    ax.set_xlabel('\#nodes', fontsize=14)
     ax.set_ylabel('walltime (s)', fontsize=14)
     ax.set_xscale('log')
     ax.set_xticks(numNodes)
@@ -58,7 +67,7 @@ for file in files:
     ax.get_yaxis().set_minor_formatter(matplotlib.ticker.ScalarFormatter())
     ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
     ax.grid(True)
-    fig1.savefig(f"{graphsDest}/{filename}strong.pdf", format="pdf", bbox_inches='tight', dpi=300)
+    fig1.savefig(f"{graphsDest}/{filename}strong.eps", format="eps", bbox_inches='tight', dpi=300)
 
     # weak
     dfweak = df[df["RunType"] == 'weak'].copy()
@@ -74,8 +83,8 @@ for file in files:
         ax.plot(numNodes, dfweak.loc[dfweak["Config"] == configTypes[i], "IdealWalltime"], colors2[i], label=configTypesPretty[i]+' Ideal')
     #ax.set_xticks([x for x in range(0,numFolders)])
     ax.legend()
-    ax.set_title(f'Weak scaling - Droplet diameter {filename[5:-4]}', fontsize=14)
-    ax.set_xlabel('#nodes', fontsize=14)
+    #ax.set_title(f'Weak scaling - Droplet diameter {filename[5:-4]}', fontsize=14)
+    ax.set_xlabel('\#nodes', fontsize=14)
     ax.set_ylabel('walltime (s)', fontsize=14)
     ax.set_xscale('log')
     ax.set_xticks(numNodes)
@@ -86,4 +95,4 @@ for file in files:
     ax.get_yaxis().set_minor_formatter(matplotlib.ticker.ScalarFormatter())
     ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
     ax.grid(True)
-    fig1.savefig(f"{graphsDest}/{filename}weak.pdf", format="pdf", bbox_inches='tight', dpi=300)
+    fig1.savefig(f"{graphsDest}/{filename}weak.eps", format="eps", bbox_inches='tight', dpi=300)

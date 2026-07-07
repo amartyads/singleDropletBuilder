@@ -143,6 +143,14 @@ def main(argv):
     """
     adiosXML = ET.fromstring(adiosText)
 
+    vtkText = f"""
+        <outputplugin name="VTKMoleculeWriter">
+            <outputprefix>{jsonData['vtkOutput']['filename']}</outputprefix>
+            <writefrequency>{jsonData['vtkOutput']['frequency']}</writefrequency>
+        </outputplugin>
+    """
+    vtkXML = ET.fromstring(vtkText)
+
     dropletCPText = f"""
         <outputplugin name="CheckpointWriter">
             <type>binary</type>
@@ -232,6 +240,8 @@ def main(argv):
         tree = doCommonXMLChanges(tree, jsonData['scenario']['timestepsProd'], False)
         if jsonData['adiosOutput']['enabled']:
             tree.find('simulation/output').append(adiosXML)
+        if jsonData['vtkOutput']['enabled']:
+            tree.find('simulation/output').append(vtkXML)
         if jsonData['stack']['mamico']:
             tree.find('simulation').append(mamicoXML)
             tree.find('loglevel').text = "ERROR"
@@ -281,6 +291,8 @@ def main(argv):
         tree.find('simulation/ensemble/domain/lz').text = str(jsonData['scenario']['boxSize'])
         if jsonData['adiosOutput']['enabled']:
             tree.find('simulation/output').append(adiosXML)
+        if jsonData['vtkOutput']['enabled']:
+            tree.find('simulation/output').append(vtkXML)
         if jsonData['stack']['mamico']:
             tree.find('simulation').append(mamicoXML)
             tree.find('loglevel').text = "ERROR"

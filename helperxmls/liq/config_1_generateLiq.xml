@@ -78,10 +78,11 @@
 				<outputprefix>cp_binary_genLiq</outputprefix>
 			</outputplugin>
 
-			<outputplugin name="MaxWriter">
+<!--		<outputplugin name="MaxWriter">
 				<writefrequency>5000</writefrequency>
 				<outputprefix>maxvals</outputprefix>
 			</outputplugin>
+-->
 <!--
 			<outputplugin name="MmpldWriter" type="simple">
 				<include query="/spheres" >../../xml/sphereparams_2c.xml</include>
