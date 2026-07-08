@@ -41,6 +41,11 @@ autoPXML = ET.fromstring(autopasText)
 lcXML = ET.fromstring(lcText)
 
 def doCommonXMLChanges(tree, ts, builder):
+    parText = f"""<parallelisation type="DomainDecomposition">
+        <boundaries> <x>{jsonData['scenario']['boundary']}</x><y>{jsonData['scenario']['boundary']}</y><z>{jsonData['scenario']['boundary']}</z> </boundaries>
+    </parallelisation>
+    """
+    parXML = ET.fromstring(parText)
     tree.find('simulation/ensemble/temperature').text = str(jsonData['scenario']['temperature'])
     tree.find('simulation/algorithm/cutoffs/defaultCutoff').text = str(jsonData['component']['sigma'] * 2.5)
     tree.find('simulation/algorithm/cutoffs/radiusLJ').text = str(jsonData['component']['sigma'] * 2.5)
@@ -59,7 +64,8 @@ def doCommonXMLChanges(tree, ts, builder):
             tree.find('simulation/algorithm').append(autoPXML)
         else:
             tree.find('simulation/algorithm').append(lcXML)
-
+    tree.find('simulation/algorithm').remove(tree.find('simulation/algorithm/parallelisation'))
+    tree.find('simulation/algorithm').append(parXML)
     return tree
 
 

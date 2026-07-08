@@ -13,6 +13,7 @@
         "timestepsRep" : 500,
         "timestepsDropBuild" : 100,
         "timestepsProd" : 10000,
+        "boundary" : "periodic",
         "mamicoCyc" : 20,
         "mamicoNumMultiMD": 2,
         "mamicoCellsize" : 5,
