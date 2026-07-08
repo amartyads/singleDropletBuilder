@@ -69,7 +69,7 @@ def main(argv):
     runComm = jobSnips["system"][jsonData["job"]["system"]]["runComm"]
     exec = jobSnips["system"][jsonData["job"]["system"]]["exec"]
 
-    header = header.replace("<wallTime>","01:00:00").replace("<numNodes>","1").replace("<partition>","small").replace("<jobName>","droplet")
+    header = header.replace("<wallTime>",jsonData["job"]["maxWall"]).replace("<numNodes>","1").replace("<partition>","small").replace("<jobName>","droplet")
     runComm = runComm.replace("<numProcs>","64")
 
     if jsonData["stack"]["autopasPrep"]:
