@@ -49,7 +49,8 @@
     },
     "vtkOutput" : {
         "enabled" : false,
-        "filename" : "vtk/vtkOutput",
-        "frequency" : 1000
+        "filename" : "vtkOutput",
+        "frequency" : 1000,
+        "makeFolder" : true
     }
 }

@@ -133,11 +133,14 @@ def main(argv):
 
     #create folders
     
+    vtkFolderName = 'vtk'
     checkMakeFolder(os.path.join(jsonData['paths']['output'],'liq'))
     checkMakeFolder(os.path.join(jsonData['paths']['output'],'vap'))
     checkMakeFolder(os.path.join(jsonData['paths']['output'],'vle'))
     if jsonData['stack']['mamico']:
         checkMakeFolder(os.path.join(jsonData['paths']['output'],'coupled'))
+    if jsonData['vtkOutput']['enabled'] and jsonData['vtkOutput']['makeFolder']:
+        checkMakeFolder(os.path.join(jsonData['paths']['output'],'vle',vtkFolderName))
     
     # extra xmls
     adiosText = f"""
@@ -149,6 +152,9 @@ def main(argv):
     """
     adiosXML = ET.fromstring(adiosText)
 
+    
+    if jsonData['vtkOutput']['makeFolder']:
+        jsonData['vtkOutput']['filename'] = vtkFolderName + '/' + jsonData['vtkOutput']['filename']
     vtkText = f"""
         <outputplugin name="VTKMoleculeWriter">
             <outputprefix>{jsonData['vtkOutput']['filename']}</outputprefix>
